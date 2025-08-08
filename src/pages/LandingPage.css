@@ -14,7 +14,7 @@
 
 .nav-container {
   width: 100%;
-  padding: 1rem 2rem;
+  padding: 1.5rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -24,6 +24,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-family: 'Poppins', sans-serif;
   font-weight: 600;
   font-size: 1.25rem;
   color: #333;
@@ -31,15 +32,16 @@
 }
 
 .logo-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: #000000;
   color: white;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
+  font-size: 1.1rem;
 }
 
 .nav-links {
@@ -51,23 +53,32 @@
 .nav-link {
   text-decoration: none;
   color: #333;
+  font-family: 'Poppins', sans-serif;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
   transition: all 0.3s ease;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
 }
 
 .nav-link:hover {
   background-color: rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
 }
 
 .signup-btn {
-  background: #000000;
+  background: #000000 !important;
   color: white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .signup-btn:hover {
-  background: #333333;
+  background: #333333 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .logout-btn {
@@ -90,10 +101,21 @@
 
 @media (max-width: 768px) {
   .nav-container {
-    padding: 1rem;
+    padding: 1.25rem 1rem;
   }
   
   .nav-links {
     gap: 1rem;
+  }
+  
+  .nav-link {
+    padding: 0.625rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
   }
 }
