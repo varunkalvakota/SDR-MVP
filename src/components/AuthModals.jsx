@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import './AuthModals.css'
 
-const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
+const LoginModal = ({ isOpen, onClose, onSwitchToSignup, onSwitchToReset }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -73,6 +73,13 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
               required
               disabled={loading}
             />
+            <button
+              type="button"
+              className="forgot-password-link"
+              onClick={onSwitchToReset}
+            >
+              Forgot Password?
+            </button>
           </div>
 
           <button
@@ -265,4 +272,113 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   )
 }
 
-export { LoginModal, SignupModal }
+const ResetPasswordModal = ({ isOpen, onClose, onSwitchToLogin }) => {
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const { resetPassword } = useAuth()
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      const { error } = await resetPassword(email)
+      if (error) {
+        setError(error.message)
+      } else {
+        setSuccess(true)
+        setEmail('')
+      }
+    } catch (err) {
+      setError('An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleClose = () => {
+    setEmail('')
+    setError('')
+    setSuccess(false)
+    onClose()
+  }
+
+  if (!isOpen) return null
+
+  if (success) {
+    return (
+      <div className="modal-overlay" onClick={handleClose}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <button className="modal-close" onClick={handleClose}>×</button>
+          
+          <div className="modal-header">
+            <h2>Check your email!</h2>
+            <p>We've sent you a password reset link. Click the link in your email to reset your password.</p>
+          </div>
+
+          <button
+            className="modal-submit-btn"
+            onClick={onSwitchToLogin}
+          >
+            Back to Log In
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="modal-overlay" onClick={handleClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={handleClose}>×</button>
+        
+        <div className="modal-header">
+          <h2>Reset Password</h2>
+          <p>Enter your email address and we'll send you a link to reset your password.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-form">
+          {error && <div className="error-message">{error}</div>}
+          
+          <div className="form-group">
+            <label htmlFor="reset-email">Email</label>
+            <input
+              id="reset-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="modal-submit-btn"
+            disabled={loading}
+          >
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
+        </form>
+
+        <div className="modal-footer">
+          <p>
+            Remember your password?{' '}
+            <button
+              type="button"
+              className="modal-link"
+              onClick={onSwitchToLogin}
+            >
+              Log In
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export { LoginModal, SignupModal, ResetPasswordModal }

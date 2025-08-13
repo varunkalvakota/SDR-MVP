@@ -68,12 +68,28 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const resetPassword = async (email) => {
+    setLoading(true)
+    try {
+      const { data, error } = await auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      })
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      return { data: null, error }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const value = {
     user,
     loading,
     signUp,
     signIn,
-    signOut
+    signOut,
+    resetPassword
   }
 
   return (

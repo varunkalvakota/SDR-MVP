@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import SupabaseSetup from '../components/SupabaseSetup'
-import { LoginModal, SignupModal } from '../components/AuthModals'
+import { LoginModal, SignupModal, ResetPasswordModal } from '../components/AuthModals'
 import { 
   FiFileText, 
   FiCpu, 
@@ -24,6 +24,7 @@ const LandingPage = () => {
   const { user, signOut } = useAuth()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false)
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -35,17 +36,26 @@ const LandingPage = () => {
 
   const openLoginModal = () => {
     setIsSignupModalOpen(false)
+    setIsResetModalOpen(false)
     setIsLoginModalOpen(true)
   }
 
   const openSignupModal = () => {
     setIsLoginModalOpen(false)
+    setIsResetModalOpen(false)
     setIsSignupModalOpen(true)
+  }
+
+  const openResetModal = () => {
+    setIsLoginModalOpen(false)
+    setIsSignupModalOpen(false)
+    setIsResetModalOpen(true)
   }
 
   const closeModals = () => {
     setIsLoginModalOpen(false)
     setIsSignupModalOpen(false)
+    setIsResetModalOpen(false)
   }
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
@@ -454,9 +464,15 @@ const LandingPage = () => {
         isOpen={isLoginModalOpen}
         onClose={closeModals}
         onSwitchToSignup={openSignupModal}
+        onSwitchToReset={openResetModal}
       />
       <SignupModal 
         isOpen={isSignupModalOpen}
+        onClose={closeModals}
+        onSwitchToLogin={openLoginModal}
+      />
+      <ResetPasswordModal
+        isOpen={isResetModalOpen}
         onClose={closeModals}
         onSwitchToLogin={openLoginModal}
       />

@@ -73,33 +73,32 @@
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
 }
 
 .form-group label {
-  font-family: 'Poppins', sans-serif;
+  display: block;
+  margin-bottom: 0.5rem;
   font-weight: 500;
   color: #333;
   font-size: 0.9rem;
 }
 
 .form-group input {
-  padding: 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  font-family: 'Poppins', sans-serif;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: white;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #333;
-  box-shadow: 0 0 0 4px rgba(51, 51, 51, 0.1);
-  transform: translateY(-1px);
+  border-color: #000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .form-group input:disabled {
@@ -181,6 +180,23 @@
   font-size: 0.875rem;
   border: 1px solid #fecaca;
   margin-bottom: 0.5rem;
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.5rem;
+  display: block;
+  transition: color 0.3s ease;
+}
+
+.forgot-password-link:hover {
+  color: #000;
 }
 
 
