@@ -30,6 +30,10 @@ if (hasRealCredentials) {
         error: { message: 'Please configure Supabase credentials in your .env file' } 
       }),
       signOut: () => Promise.resolve({ error: null }),
+      resetPasswordForEmail: () => Promise.resolve({ 
+        data: null, 
+        error: { message: 'Please configure Supabase credentials in your .env file' } 
+      }),
       getUser: () => Promise.resolve({ data: { user: null } }),
       onAuthStateChange: (callback) => {
         setTimeout(() => callback('SIGNED_OUT', null), 0)
@@ -70,6 +74,11 @@ export const auth = {
   signOut: async () => {
     const { error } = await supabase.auth.signOut()
     return { error }
+  },
+
+  resetPasswordForEmail: async (email, options = {}) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, options)
+    return { data, error }
   },
 
   getCurrentUser: () => {
