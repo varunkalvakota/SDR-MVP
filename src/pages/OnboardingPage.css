@@ -333,9 +333,25 @@
   text-align: center;
 }
 
+.continue-notice {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 .auth-notice p {
   margin-bottom: 1rem;
   font-size: 1rem;
+}
+
+.continue-notice p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .auth-button {

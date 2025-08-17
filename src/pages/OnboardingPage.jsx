@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -27,6 +27,7 @@ const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [isContinuing, setIsContinuing] = useState(false)
   const [formData, setFormData] = useState({
     // Step 1: Personal Info
     firstName: '',
@@ -51,6 +52,51 @@ const OnboardingPage = () => {
   })
 
   const totalSteps = 3
+
+  useEffect(() => {
+    if (user) {
+      loadExistingProfile()
+    }
+  }, [user])
+
+  const loadExistingProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (data && !error) {
+        // Pre-fill form with existing data
+        setFormData({
+          firstName: data.first_name || '',
+          lastName: data.last_name || '',
+          email: data.email || '',
+          currentRole: data.current_position || '',
+          experienceYears: data.experience_years || '',
+          resume: null, // File object can't be restored from URL
+          careerGoal: data.career_goal || '',
+          timeline: data.timeline || '',
+          preferredIndustry: data.preferred_industry || '',
+          salaryExpectation: data.salary_expectation || '',
+          workStyle: data.work_style || '',
+          skills: data.skills || [],
+          challenges: data.challenges || '',
+          motivation: data.motivation || '',
+          availability: data.availability || ''
+        })
+        
+        // Check if user has some data but hasn't completed onboarding
+        if (data.first_name && data.last_name && data.email && !data.onboarding_completed) {
+          setIsContinuing(true)
+        }
+      }
+    } catch (error) {
+      // User doesn't have a profile yet, which is fine
+      console.log('No existing profile found, starting fresh onboarding')
+    }
+  }
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -470,6 +516,12 @@ const OnboardingPage = () => {
             <button onClick={() => navigate('/')} className="auth-button">
               Back to Sign In
             </button>
+          </div>
+        )}
+        
+        {isContinuing && (
+          <div className="continue-notice">
+            <p>Welcome back! We found your previous onboarding progress. You can continue where you left off or update your information.</p>
           </div>
         )}
         

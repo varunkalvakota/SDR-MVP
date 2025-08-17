@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { 
   FiUser, 
@@ -24,6 +25,7 @@ import './DashboardPage.css'
 
 const DashboardPage = () => {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -43,7 +45,23 @@ const DashboardPage = () => {
         .eq('id', user.id)
         .single()
 
-      if (error) throw error
+      if (error) {
+        // If no profile found, redirect to onboarding
+        if (error.code === 'PGRST116') {
+          console.log('No profile found, redirecting to onboarding...')
+          navigate('/onboarding')
+          return
+        }
+        throw error
+      }
+
+      // Check if onboarding is completed
+      if (!data.onboarding_completed) {
+        console.log('Onboarding not completed, redirecting...')
+        navigate('/onboarding')
+        return
+      }
+
       setProfile(data)
     } catch (error) {
       console.error('Error fetching profile:', error)
