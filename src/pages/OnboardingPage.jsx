@@ -17,7 +17,8 @@ import {
   FiMail,
   FiCalendar,
   FiBriefcase,
-  FiLoader
+  FiLoader,
+  FiArrowLeft as FiBack
 } from 'react-icons/fi'
 import './OnboardingPage.css'
 
@@ -503,11 +504,20 @@ const OnboardingPage = () => {
     <div className="onboarding-page">
       <div className="onboarding-container">
         <div className="onboarding-header">
-          <div className="logo-section">
-            <span className="logo-icon">S</span>
-            <span className="logo-text">SDR Roadmap</span>
+          <div className="header-left">
+            <button onClick={() => navigate('/')} className="back-button">
+              <FiBack /> Back to Home
+            </button>
           </div>
-          {renderStepIndicator()}
+          <div className="header-center">
+            <div className="logo-section">
+              <span className="logo-icon">S</span>
+              <span className="logo-text">SDR Roadmap</span>
+            </div>
+          </div>
+          <div className="header-right">
+            {renderStepIndicator()}
+          </div>
         </div>
         
         {!user && (
