@@ -209,6 +209,24 @@
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
+/* Pre-filled field styling */
+.input-with-badge {
+  position: relative;
+}
+
+.pre-filled-badge {
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background: #10b981;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  z-index: 1;
+}
+
 .form-group textarea {
   resize: vertical;
   min-height: 100px;
@@ -397,6 +415,24 @@
   font-size: 1rem;
   font-weight: 500;
 }
+
+.welcome-notice {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.welcome-notice p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+
 
 .auth-button {
   background: #0369a1;

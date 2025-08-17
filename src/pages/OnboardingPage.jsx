@@ -29,6 +29,7 @@ const OnboardingPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [isContinuing, setIsContinuing] = useState(false)
+  const [isNewUser, setIsNewUser] = useState(false)
   const [formData, setFormData] = useState({
     // Step 1: Personal Info
     firstName: '',
@@ -52,6 +53,9 @@ const OnboardingPage = () => {
     availability: ''
   })
 
+  // Force re-render when form data changes
+  const [formKey, setFormKey] = useState(0)
+
   const totalSteps = 3
 
   useEffect(() => {
@@ -59,6 +63,23 @@ const OnboardingPage = () => {
       loadExistingProfile()
     }
   }, [user])
+
+  // Direct pre-fill when user metadata is available
+  useEffect(() => {
+    if (user && user.user_metadata && (user.user_metadata.first_name || user.user_metadata.last_name)) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.user_metadata.first_name || '',
+        lastName: user.user_metadata.last_name || '',
+        email: user.email || ''
+      }))
+      
+      setFormKey(prev => prev + 1)
+      setIsNewUser(true)
+    }
+  }, [user])
+
+
 
   const loadExistingProfile = async () => {
     try {
@@ -94,8 +115,50 @@ const OnboardingPage = () => {
         }
       }
     } catch (error) {
-      // User doesn't have a profile yet, which is fine
-      console.log('No existing profile found, starting fresh onboarding')
+      // User doesn't have a profile yet, pre-fill with auth data
+      setIsNewUser(true)
+      
+      // Pre-fill form with data from user metadata if available
+      if (user.user_metadata && (user.user_metadata.first_name || user.user_metadata.last_name)) {
+        const newFormData = {
+          firstName: user.user_metadata.first_name || '',
+          lastName: user.user_metadata.last_name || '',
+          email: user.email || '',
+          currentRole: '',
+          experienceYears: '',
+          resume: null,
+          careerGoal: '',
+          timeline: '',
+          preferredIndustry: '',
+          salaryExpectation: '',
+          workStyle: '',
+          skills: [],
+          challenges: '',
+          motivation: '',
+          availability: ''
+        }
+        setFormData(newFormData)
+      } else {
+        // Set email at least
+        const defaultFormData = {
+          firstName: '',
+          lastName: '',
+          email: user.email || '',
+          currentRole: '',
+          experienceYears: '',
+          resume: null,
+          careerGoal: '',
+          timeline: '',
+          preferredIndustry: '',
+          salaryExpectation: '',
+          workStyle: '',
+          skills: [],
+          challenges: '',
+          motivation: '',
+          availability: ''
+        }
+        setFormData(defaultFormData)
+      }
     }
   }
 
@@ -127,7 +190,6 @@ const OnboardingPage = () => {
       .upload(fileName, file)
     
     if (error) {
-      console.error('Error uploading resume:', error)
       return null
     }
     
@@ -143,16 +205,12 @@ const OnboardingPage = () => {
       setIsSubmitting(true)
       setError('')
       
-      console.log('Starting to save profile...')
-      console.log('User ID:', user.id)
-      console.log('Form data:', formData)
+
       
       // Upload resume if provided
       let resumeUrl = null
       if (formData.resume) {
-        console.log('Uploading resume...')
         resumeUrl = await uploadResume(formData.resume)
-        console.log('Resume URL:', resumeUrl)
       }
       
       // Prepare data for database
@@ -176,21 +234,15 @@ const OnboardingPage = () => {
         onboarding_completed: true
       }
       
-      console.log('Profile data to save:', profileData)
-      
       // Insert or update user profile
       const { data, error } = await supabase
         .from('user_profiles')
         .upsert(profileData, { onConflict: 'id' })
       
-      console.log('Supabase response:', { data, error })
-      
       if (error) {
         console.error('Supabase error:', error)
         throw error
       }
-      
-      console.log('Profile saved successfully!')
       return true
       
     } catch (error) {
@@ -250,35 +302,50 @@ const OnboardingPage = () => {
       <div className="form-grid">
         <div className="form-group">
           <label>First Name *</label>
-          <input
-            type="text"
-            value={formData.firstName}
-            onChange={(e) => handleInputChange('firstName', e.target.value)}
-            placeholder="Enter your first name"
-            required
-          />
+          <div className="input-with-badge">
+            <input
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => handleInputChange('firstName', e.target.value)}
+              placeholder="Enter your first name"
+              required
+            />
+            {isNewUser && user?.user_metadata?.first_name && (
+              <span className="pre-filled-badge">Pre-filled</span>
+            )}
+          </div>
         </div>
         
         <div className="form-group">
           <label>Last Name *</label>
-          <input
-            type="text"
-            value={formData.lastName}
-            onChange={(e) => handleInputChange('lastName', e.target.value)}
-            placeholder="Enter your last name"
-            required
-          />
+          <div className="input-with-badge">
+            <input
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => handleInputChange('lastName', e.target.value)}
+              placeholder="Enter your last name"
+              required
+            />
+            {isNewUser && user?.user_metadata?.last_name && (
+              <span className="pre-filled-badge">Pre-filled</span>
+            )}
+          </div>
         </div>
         
         <div className="form-group">
           <label>Email Address *</label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleInputChange('email', e.target.value)}
-            placeholder="Enter your email"
-            required
-          />
+          <div className="input-with-badge">
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              placeholder="Enter your email"
+              required
+            />
+            {isNewUser && user?.email && (
+              <span className="pre-filled-badge">Pre-filled</span>
+            )}
+          </div>
         </div>
         
         <div className="form-group">
@@ -535,15 +602,25 @@ const OnboardingPage = () => {
           </div>
         )}
         
+        {!isContinuing && user && isNewUser && (
+          <div className="welcome-notice">
+            <p>Welcome to SDR Roadmap! We've pre-filled your information from your signup. Let's create your personalized career plan.</p>
+          </div>
+        )}
+        
+
+        
+
+        
         {error && (
           <div className="error-message">
             <p>{error}</p>
           </div>
         )}
         
-        <div className="onboarding-content">
-          {renderCurrentStep()}
-        </div>
+                 <div className="onboarding-content" key={formKey}>
+           {renderCurrentStep()}
+         </div>
         
         <div className="onboarding-footer">
           <div className="step-navigation">

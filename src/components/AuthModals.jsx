@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import './AuthModals.css'
 
-const LoginModal = ({ isOpen, onClose, onSwitchToSignup, onSwitchToReset }) => {
+const LoginModal = ({ isOpen, onClose, onSwitchToSignup, onSwitchToReset, onLoginSuccess }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -22,6 +22,10 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup, onSwitchToReset }) => {
         onClose()
         setEmail('')
         setPassword('')
+        // Call the success callback to handle redirect
+        if (onLoginSuccess) {
+          onLoginSuccess()
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred')

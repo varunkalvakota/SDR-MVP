@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import SupabaseSetup from '../components/SupabaseSetup'
 import { LoginModal, SignupModal, ResetPasswordModal } from '../components/AuthModals'
 import { 
@@ -26,6 +27,7 @@ const LandingPage = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
+  const [shouldCheckOnboarding, setShouldCheckOnboarding] = useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -59,13 +61,57 @@ const LandingPage = () => {
     setIsResetModalOpen(false)
   }
 
+  const checkOnboardingStatus = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .single()
+      
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which means user has no profile yet
+        console.error('Error checking onboarding status:', error)
+        return
+      }
+      
+      // If user has no profile or hasn't completed onboarding, redirect to onboarding
+      if (!data || !data.onboarding_completed) {
+        navigate('/onboarding')
+      } else {
+        // User has completed onboarding, redirect to dashboard
+        navigate('/dashboard')
+      }
+    } catch (error) {
+      console.error('Error checking onboarding status:', error)
+      // Default to onboarding if there's an error
+      navigate('/onboarding')
+    }
+  }
+
+  const handleLoginSuccess = () => {
+    closeModals()
+    // Set flag to check onboarding status when user state updates
+    setShouldCheckOnboarding(true)
+  }
+
+  // Check onboarding status when user logs in
+  useEffect(() => {
+    if (user && shouldCheckOnboarding) {
+      checkOnboardingStatus()
+      setShouldCheckOnboarding(false)
+    }
+  }, [user, shouldCheckOnboarding])
+
   const startOnboarding = () => {
     if (!user) {
       // If user is not authenticated, open signup modal
       openSignupModal()
     } else {
-      // If user is authenticated, go to onboarding
-      navigate('/onboarding')
+      // If user is authenticated, check if they need onboarding
+      checkOnboardingStatus()
     }
   }
 
@@ -640,6 +686,7 @@ const LandingPage = () => {
         onClose={closeModals}
         onSwitchToSignup={openSignupModal}
         onSwitchToReset={openResetModal}
+        onLoginSuccess={handleLoginSuccess}
       />
       <SignupModal 
         isOpen={isSignupModalOpen}

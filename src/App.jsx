@@ -30,7 +30,14 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/onboarding" element={<OnboardingPage />} />
+      <Route 
+        path="/onboarding" 
+        element={
+          <ProtectedRoute>
+            <OnboardingPage />
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/dashboard" 
         element={
