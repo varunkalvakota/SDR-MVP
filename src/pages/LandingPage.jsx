@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import SupabaseSetup from '../components/SupabaseSetup'
 import { LoginModal, SignupModal, ResetPasswordModal } from '../components/AuthModals'
@@ -22,6 +22,7 @@ import './LandingPage.css'
 
 const LandingPage = () => {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
@@ -56,6 +57,16 @@ const LandingPage = () => {
     setIsLoginModalOpen(false)
     setIsSignupModalOpen(false)
     setIsResetModalOpen(false)
+  }
+
+  const startOnboarding = () => {
+    if (!user) {
+      // If user is not authenticated, open signup modal
+      openSignupModal()
+    } else {
+      // If user is authenticated, go to onboarding
+      navigate('/onboarding')
+    }
   }
 
   const scrollToSection = (sectionId) => {
@@ -126,7 +137,7 @@ const LandingPage = () => {
               <p className="hero-subheadline">
                 Step into your career simulation — guided by AI, proven by real success stories.
               </p>
-              <button onClick={openSignupModal} className="hero-cta">
+              <button onClick={startOnboarding} className="hero-cta">
                 Start My Free Career Plan
               </button>
             </div>
@@ -424,7 +435,7 @@ const LandingPage = () => {
                     <span>5-step starter roadmap</span>
                   </li>
                 </ul>
-                <button onClick={openSignupModal} className="pricing-button free-button">
+                <button onClick={startOnboarding} className="pricing-button free-button">
                   Get Started Free
                 </button>
               </div>
@@ -457,7 +468,7 @@ const LandingPage = () => {
                     <span>Progress tracking</span>
                   </li>
                 </ul>
-                <button onClick={openSignupModal} className="pricing-button pro-button">
+                <button onClick={startOnboarding} className="pricing-button pro-button">
                   Start 7-Day Free Trial
                 </button>
               </div>
@@ -489,7 +500,7 @@ const LandingPage = () => {
                     <span>Team management</span>
                   </li>
                 </ul>
-                <button onClick={openSignupModal} className="pricing-button enterprise-button">
+                <button onClick={startOnboarding} className="pricing-button enterprise-button">
                   Contact Sales
                 </button>
               </div>
@@ -526,7 +537,7 @@ const LandingPage = () => {
                   <span>Progress tracking and achievements</span>
                 </div>
               </div>
-              <button onClick={openSignupModal} className="final-cta-button">
+              <button onClick={startOnboarding} className="final-cta-button">
                 Start My Free Career Plan
               </button>
               <p className="cta-guarantee">

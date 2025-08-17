@@ -1,0 +1,534 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
+import { 
+  FiUpload, 
+  FiCpu, 
+  FiMap, 
+  FiArrowRight, 
+  FiArrowLeft,
+  FiFileText,
+  FiTarget,
+  FiTrendingUp,
+  FiUsers,
+  FiCheckCircle,
+  FiUser,
+  FiMail,
+  FiCalendar,
+  FiBriefcase,
+  FiLoader
+} from 'react-icons/fi'
+import './OnboardingPage.css'
+
+const OnboardingPage = () => {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [formData, setFormData] = useState({
+    // Step 1: Personal Info
+    firstName: '',
+    lastName: '',
+    email: '',
+    currentRole: '',
+    experienceYears: '',
+    resume: null,
+    
+    // Step 2: Goals & Preferences
+    careerGoal: '',
+    timeline: '',
+    preferredIndustry: '',
+    salaryExpectation: '',
+    workStyle: '',
+    
+    // Step 3: Additional Info
+    skills: [],
+    challenges: '',
+    motivation: '',
+    availability: ''
+  })
+
+  const totalSteps = 3
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        resume: file
+      }))
+    }
+  }
+
+  const uploadResume = async (file) => {
+    if (!file || !user) return null
+    
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`
+    
+    const { data, error } = await supabase.storage
+      .from('resumes')
+      .upload(fileName, file)
+    
+    if (error) {
+      console.error('Error uploading resume:', error)
+      return null
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from('resumes')
+      .getPublicUrl(fileName)
+    
+    return publicUrl
+  }
+
+  const saveToSupabase = async () => {
+    try {
+      setIsSubmitting(true)
+      setError('')
+      
+      console.log('Starting to save profile...')
+      console.log('User ID:', user.id)
+      console.log('Form data:', formData)
+      
+      // Upload resume if provided
+      let resumeUrl = null
+      if (formData.resume) {
+        console.log('Uploading resume...')
+        resumeUrl = await uploadResume(formData.resume)
+        console.log('Resume URL:', resumeUrl)
+      }
+      
+      // Prepare data for database
+      const profileData = {
+        id: user.id,
+        email: formData.email,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        current_position: formData.currentRole,
+        experience_years: formData.experienceYears,
+        resume_url: resumeUrl,
+        career_goal: formData.careerGoal,
+        timeline: formData.timeline,
+        preferred_industry: formData.preferredIndustry,
+        salary_expectation: formData.salaryExpectation,
+        work_style: formData.workStyle,
+        skills: formData.skills,
+        challenges: formData.challenges,
+        motivation: formData.motivation,
+        availability: formData.availability,
+        onboarding_completed: true
+      }
+      
+      console.log('Profile data to save:', profileData)
+      
+      // Insert or update user profile
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .upsert(profileData, { onConflict: 'id' })
+      
+      console.log('Supabase response:', { data, error })
+      
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+      
+      console.log('Profile saved successfully!')
+      return true
+      
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      setError('Failed to save your profile. Please try again.')
+      return false
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const handleSubmit = async () => {
+    if (!user) {
+      setError('Please sign in to save your profile.')
+      return
+    }
+    
+    const success = await saveToSupabase()
+    if (success) {
+      // Navigate to dashboard after successful save
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 1000)
+    }
+  }
+
+  const renderStepIndicator = () => (
+    <div className="step-indicator">
+      {[1, 2, 3].map(step => (
+        <div key={step} className={`step-dot ${step <= currentStep ? 'active' : ''}`}>
+          {step < currentStep ? <FiCheckCircle /> : step}
+        </div>
+      ))}
+    </div>
+  )
+
+  const renderStep1 = () => (
+    <div className="onboarding-step">
+      <div className="step-header">
+        <div className="step-icon"><FiUser /></div>
+        <h2>Tell Us About You</h2>
+        <p>Let's start with some basic information to personalize your experience</p>
+      </div>
+      
+      <div className="form-grid">
+        <div className="form-group">
+          <label>First Name *</label>
+          <input
+            type="text"
+            value={formData.firstName}
+            onChange={(e) => handleInputChange('firstName', e.target.value)}
+            placeholder="Enter your first name"
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Last Name *</label>
+          <input
+            type="text"
+            value={formData.lastName}
+            onChange={(e) => handleInputChange('lastName', e.target.value)}
+            placeholder="Enter your last name"
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Email Address *</label>
+          <input
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleInputChange('email', e.target.value)}
+            placeholder="Enter your email"
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Current Role</label>
+          <select
+            value={formData.currentRole}
+            onChange={(e) => handleInputChange('currentRole', e.target.value)}
+          >
+            <option value="">Select your current role</option>
+            <option value="sdr">SDR (Sales Development Representative)</option>
+            <option value="ae">AE (Account Executive)</option>
+            <option value="manager">Sales Manager</option>
+            <option value="student">Student</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label>Years of Experience</label>
+          <select
+            value={formData.experienceYears}
+            onChange={(e) => handleInputChange('experienceYears', e.target.value)}
+          >
+            <option value="">Select experience level</option>
+            <option value="0-1">0-1 years</option>
+            <option value="1-3">1-3 years</option>
+            <option value="3-5">3-5 years</option>
+            <option value="5+">5+ years</option>
+          </select>
+        </div>
+        
+        <div className="form-group full-width">
+          <label>Upload Resume (Optional)</label>
+          <div className="file-upload">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileUpload}
+              id="resume-upload"
+            />
+            <label htmlFor="resume-upload" className="file-upload-label">
+              <FiUpload />
+              <span>{formData.resume ? formData.resume.name : 'Choose file or drag here'}</span>
+            </label>
+          </div>
+          <small>PDF, DOC, or DOCX files accepted</small>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderStep2 = () => (
+    <div className="onboarding-step">
+      <div className="step-header">
+        <div className="step-icon"><FiTarget /></div>
+        <h2>Define Your Goals</h2>
+        <p>Help us understand your career aspirations and preferences</p>
+      </div>
+      
+      <div className="form-grid">
+        <div className="form-group">
+          <label>Career Goal *</label>
+          <select
+            value={formData.careerGoal}
+            onChange={(e) => handleInputChange('careerGoal', e.target.value)}
+            required
+          >
+            <option value="">Select your primary goal</option>
+            <option value="promotion">Get promoted to AE</option>
+            <option value="management">Move into management</option>
+            <option value="pivot">Pivot to different role</option>
+            <option value="break-in">Break into tech sales</option>
+            <option value="salary">Increase salary</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label>Timeline</label>
+          <select
+            value={formData.timeline}
+            onChange={(e) => handleInputChange('timeline', e.target.value)}
+          >
+            <option value="">Select your timeline</option>
+            <option value="3-months">3 months</option>
+            <option value="6-months">6 months</option>
+            <option value="1-year">1 year</option>
+            <option value="2-years">2 years</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label>Preferred Industry</label>
+          <select
+            value={formData.preferredIndustry}
+            onChange={(e) => handleInputChange('preferredIndustry', e.target.value)}
+          >
+            <option value="">Select industry</option>
+            <option value="saas">SaaS</option>
+            <option value="fintech">FinTech</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="ecommerce">E-commerce</option>
+            <option value="enterprise">Enterprise</option>
+            <option value="startup">Startup</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label>Salary Expectation</label>
+          <select
+            value={formData.salaryExpectation}
+            onChange={(e) => handleInputChange('salaryExpectation', e.target.value)}
+          >
+            <option value="">Select salary range</option>
+            <option value="40-60k">$40k - $60k</option>
+            <option value="60-80k">$60k - $80k</option>
+            <option value="80-100k">$80k - $100k</option>
+            <option value="100k+">$100k+</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label>Work Style</label>
+          <select
+            value={formData.workStyle}
+            onChange={(e) => handleInputChange('workStyle', e.target.value)}
+          >
+            <option value="">Select work style</option>
+            <option value="remote">Remote</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="office">Office</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderStep3 = () => (
+    <div className="onboarding-step">
+      <div className="step-header">
+        <div className="step-icon"><FiTrendingUp /></div>
+        <h2>Final Details</h2>
+        <p>Help us create the most personalized roadmap for you</p>
+      </div>
+      
+      <div className="form-grid">
+        <div className="form-group full-width">
+          <label>Key Skills (Select all that apply)</label>
+          <div className="skills-grid">
+            {[
+              'Cold Calling', 'Email Outreach', 'LinkedIn Sales', 'CRM Management',
+              'Lead Qualification', 'Objection Handling', 'Presentation Skills',
+              'Negotiation', 'Account Management', 'Team Leadership'
+            ].map(skill => (
+              <label key={skill} className="skill-checkbox">
+                <input
+                  type="checkbox"
+                  checked={formData.skills.includes(skill)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      handleInputChange('skills', [...formData.skills, skill])
+                    } else {
+                      handleInputChange('skills', formData.skills.filter(s => s !== skill))
+                    }
+                  }}
+                />
+                <span>{skill}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        
+        <div className="form-group full-width">
+          <label>Biggest Career Challenge</label>
+          <textarea
+            value={formData.challenges}
+            onChange={(e) => handleInputChange('challenges', e.target.value)}
+            placeholder="What's your biggest challenge in advancing your career?"
+            rows="3"
+          />
+        </div>
+        
+        <div className="form-group full-width">
+          <label>What motivates you?</label>
+          <textarea
+            value={formData.motivation}
+            onChange={(e) => handleInputChange('motivation', e.target.value)}
+            placeholder="Tell us what drives you in your career..."
+            rows="3"
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Weekly Availability</label>
+          <select
+            value={formData.availability}
+            onChange={(e) => handleInputChange('availability', e.target.value)}
+          >
+            <option value="">Select availability</option>
+            <option value="5-hours">5 hours/week</option>
+            <option value="10-hours">10 hours/week</option>
+            <option value="15-hours">15 hours/week</option>
+            <option value="20+hours">20+ hours/week</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return renderStep1()
+      case 2:
+        return renderStep2()
+      case 3:
+        return renderStep3()
+      default:
+        return renderStep1()
+    }
+  }
+
+  return (
+    <div className="onboarding-page">
+      <div className="onboarding-container">
+        <div className="onboarding-header">
+          <div className="logo-section">
+            <span className="logo-icon">S</span>
+            <span className="logo-text">SDR Roadmap</span>
+          </div>
+          {renderStepIndicator()}
+        </div>
+        
+        {!user && (
+          <div className="auth-notice">
+            <p>Please sign in to save your onboarding data and create your personalized roadmap.</p>
+            <button onClick={() => navigate('/')} className="auth-button">
+              Back to Sign In
+            </button>
+          </div>
+        )}
+        
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
+        
+        <div className="onboarding-content">
+          {renderCurrentStep()}
+        </div>
+        
+        <div className="onboarding-footer">
+          <div className="step-navigation">
+            {currentStep > 1 && (
+              <button onClick={prevStep} className="nav-button prev-button">
+                <FiArrowLeft />
+                Previous
+              </button>
+            )}
+            
+            <div className="step-progress">
+              Step {currentStep} of {totalSteps}
+            </div>
+            
+            {currentStep < totalSteps ? (
+              <button 
+                onClick={nextStep} 
+                className="nav-button next-button"
+                disabled={!formData.firstName || !formData.lastName || !formData.email}
+              >
+                Next
+                <FiArrowRight />
+              </button>
+            ) : (
+              <button 
+                onClick={handleSubmit} 
+                className="nav-button submit-button"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <FiLoader className="loader-icon" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Create My Roadmap
+                    <FiArrowRight />
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default OnboardingPage
