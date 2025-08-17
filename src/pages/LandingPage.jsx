@@ -58,6 +58,17 @@ const LandingPage = () => {
     setIsResetModalOpen(false)
   }
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
   
@@ -74,11 +85,19 @@ const LandingPage = () => {
       
       <nav className="navbar">
         <div className="nav-container">
-          <div className="nav-logo">
+          <div className="nav-logo" onClick={scrollToTop}>
             <span className="logo-icon">S</span>
             <span className="logo-text">SDR Roadmap</span>
           </div>
+          
           <div className="nav-links">
+            <button onClick={() => scrollToSection('features')} className="nav-link">Features</button>
+            <a href="#pricing" className="nav-link">Pricing</a>
+            <button onClick={() => scrollToSection('about')} className="nav-link">About</button>
+            <a href="#contact" className="nav-link">Contact</a>
+          </div>
+          
+          <div className="nav-actions">
             {user ? (
               <>
                 <Link to="/dashboard" className="nav-link">Dashboard</Link>
@@ -88,7 +107,7 @@ const LandingPage = () => {
               </>
             ) : (
               <>
-                <button onClick={openLoginModal} className="nav-link">Login</button>
+                <button onClick={openLoginModal} className="nav-link login-btn">Login</button>
                 <button onClick={openSignupModal} className="nav-link signup-btn">Sign Up</button>
               </>
             )}
@@ -141,7 +160,7 @@ const LandingPage = () => {
         </section>
 
         {/* What It Is / Who It's For Section */}
-        <section className="about-section">
+        <section id="about" className="about-section">
           <div className="about-container">
             <div className="about-intro">
               <h2 className="section-title">What Is SDRroadmap?</h2>
@@ -315,7 +334,7 @@ const LandingPage = () => {
         </section>
 
         {/* How It Works Section */}
-        <section className="how-it-works-section">
+        <section id="features" className="how-it-works-section">
           <div className="how-it-works-container">
             <h2 className="section-title">How It Works</h2>
             <p className="section-subtitle">Three simple steps to your personalized career roadmap</p>
@@ -374,6 +393,105 @@ const LandingPage = () => {
                     <span className="feature-tag">Achievement System</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="pricing-section">
+          <div className="pricing-container">
+            <h2 className="section-title">Simple, Transparent Pricing</h2>
+            <p className="section-subtitle">Start free, upgrade when you're ready to accelerate.</p>
+            
+            <div className="pricing-grid">
+              <div className="pricing-card">
+                <div className="pricing-header">
+                  <h3 className="pricing-title">Free</h3>
+                  <div className="pricing-price">$0<span className="pricing-period">/forever</span></div>
+                </div>
+                <ul className="pricing-features">
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Basic career assessment</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>3 role recommendations</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>5-step starter roadmap</span>
+                  </li>
+                </ul>
+                <button onClick={openSignupModal} className="pricing-button free-button">
+                  Get Started Free
+                </button>
+              </div>
+              
+              <div className="pricing-card popular">
+                <div className="popular-badge">Most Popular</div>
+                <div className="pricing-header">
+                  <h3 className="pricing-title">Pro</h3>
+                  <div className="pricing-price">$19<span className="pricing-period">/month</span></div>
+                </div>
+                <ul className="pricing-features">
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Everything in Free</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Detailed 20+ step roadmap</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Weekly coaching with Becky</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Resume optimization</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Progress tracking</span>
+                  </li>
+                </ul>
+                <button onClick={openSignupModal} className="pricing-button pro-button">
+                  Start 7-Day Free Trial
+                </button>
+              </div>
+              
+              <div className="pricing-card">
+                <div className="pricing-header">
+                  <h3 className="pricing-title">Enterprise</h3>
+                  <div className="pricing-price">$99<span className="pricing-period">/month</span></div>
+                </div>
+                <ul className="pricing-features">
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Everything in Pro</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>1-on-1 expert calls</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Priority support</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Custom integrations</span>
+                  </li>
+                  <li className="pricing-feature">
+                    <span className="feature-icon"><FiCheckCircle /></span>
+                    <span>Team management</span>
+                  </li>
+                </ul>
+                <button onClick={openSignupModal} className="pricing-button enterprise-button">
+                  Contact Sales
+                </button>
               </div>
             </div>
           </div>
@@ -459,7 +577,53 @@ const LandingPage = () => {
         </section>
       </main>
 
-      
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-container">
+          <div className="footer-left">
+            <div className="footer-logo">SDR Roadmap</div>
+            <div className="footer-copyright">© 2025 SDR Roadmap, Inc.</div>
+          </div>
+          
+          <div className="footer-right">
+            <div className="footer-column">
+              <h4 className="footer-heading">Product</h4>
+              <ul className="footer-links">
+                <li><a href="#features" className="footer-link">Features</a></li>
+                <li><a href="#pricing" className="footer-link">Pricing</a></li>
+                <li><a href="#security" className="footer-link">Security</a></li>
+                <li><a href="#affiliates" className="footer-link">Affiliates</a></li>
+              </ul>
+            </div>
+            
+            <div className="footer-column">
+              <h4 className="footer-heading">Resources</h4>
+              <ul className="footer-links">
+                <li><a href="#contact" className="footer-link">Contact us</a></li>
+                <li><a href="#api" className="footer-link">API</a></li>
+                <li><a href="#guide" className="footer-link">Guide</a></li>
+                <li><a href="#blog" className="footer-link">Blog</a></li>
+                <li><a href="#changelog" className="footer-link">Changelog</a></li>
+              </ul>
+            </div>
+            
+            <div className="footer-column">
+              <h4 className="footer-heading">Company</h4>
+              <ul className="footer-links">
+                <li><a href="#careers" className="footer-link">Careers</a></li>
+                <li><a href="#privacy" className="footer-link">Privacy policy</a></li>
+                <li><a href="#terms" className="footer-link">Terms of service</a></li>
+                <li><a href="#dpa" className="footer-link">DPA</a></li>
+                <li><a href="#cookies" className="footer-link">Cookie policy</a></li>
+                <li><a href="#trust" className="footer-link">Trust center</a></li>
+                <li><a href="#preferences" className="footer-link">Cookie preferences</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Auth Modals */}
       <LoginModal 
         isOpen={isLoginModalOpen}
         onClose={closeModals}
