@@ -13,6 +13,14 @@ class AIService {
     console.log('API Key exists:', !!this.apiKey)
     console.log('API Key prefix:', this.apiKey ? this.apiKey.substring(0, 10) + '...' : 'none')
     console.log('Model:', this.model)
+    
+    // Check if API key is missing
+    if (!this.apiKey) {
+      console.error('❌ VITE_AI_API_KEY is not set in environment variables')
+      console.error('Please check your .env file contains: VITE_AI_API_KEY=your_api_key_here')
+    } else {
+      console.log('✅ API key loaded successfully')
+    }
   }
 
   // Get the stored resume content from Supabase storage
