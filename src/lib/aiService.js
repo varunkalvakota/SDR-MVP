@@ -3,7 +3,16 @@ import { supabase } from './supabase.js'
 class AIService {
   constructor() {
     this.apiKey = import.meta.env.VITE_AI_API_KEY
-    this.apiEndpoint = import.meta.env.VITE_AI_API_ENDPOINT || 'https://api.openai.com/v1/chat/completions'
+    // Use proxy endpoint to avoid CORS issues
+    this.apiEndpoint = '/api/ai/chat/completions'
+    this.model = 'gpt-3.5-turbo' // OpenAI model
+    
+    // Debug logging
+    console.log('AIService initialized with:')
+    console.log('API Endpoint:', this.apiEndpoint)
+    console.log('API Key exists:', !!this.apiKey)
+    console.log('API Key prefix:', this.apiKey ? this.apiKey.substring(0, 10) + '...' : 'none')
+    console.log('Model:', this.model)
   }
 
   // Get the stored resume content from Supabase storage
@@ -189,12 +198,11 @@ class AIService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo-16k', // Better context window, more efficient
+          model: this.model,
           messages: messages,
-          max_tokens: 800, // Optimized for concise responses
-          temperature: 0.5, // Slightly more focused
-          presence_penalty: 0.1, // Encourage diverse responses
-          frequency_penalty: 0.1 // Reduce repetition
+          max_tokens: 800,
+          temperature: 0.5, presence_penalty: 0.1, frequency_penalty: 0.1, presence_penalty: 0.1, frequency_penalty: 0.1,
+          stream: false
         })
       })
 
@@ -250,12 +258,11 @@ class AIService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo-16k',
+          model: this.model,
           messages: messages,
           max_tokens: 800,
-          temperature: 0.5,
-          presence_penalty: 0.1,
-          frequency_penalty: 0.1
+          temperature: 0.5, presence_penalty: 0.1, frequency_penalty: 0.1, presence_penalty: 0.1, frequency_penalty: 0.1,
+          stream: false
         })
       })
 
@@ -485,10 +492,11 @@ Keep it encouraging and actionable - I want to empower them to take their career
           'Authorization': `Bearer ${this.apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo-16k',
+          model: this.model,
           messages: messages,
           max_tokens: 1200,
-          temperature: 0.7
+          temperature: 0.7,
+          stream: false
         })
       })
 
@@ -531,10 +539,11 @@ Keep it encouraging and actionable - I want to empower them to take their career
           'Authorization': `Bearer ${this.apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo-16k',
+          model: this.model,
           messages: messages,
           max_tokens: 1000,
-          temperature: 0.5
+          temperature: 0.5, presence_penalty: 0.1, frequency_penalty: 0.1, presence_penalty: 0.1, frequency_penalty: 0.1,
+          stream: false
         })
       })
 
