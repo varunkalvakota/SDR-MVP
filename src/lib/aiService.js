@@ -2,7 +2,8 @@ import { supabase } from './supabase.js'
 
 class AIService {
   constructor() {
-    this.apiKey = import.meta.env.VITE_AI_API_KEY
+    // Try multiple ways to get the API key
+    this.apiKey = import.meta.env.VITE_AI_API_KEY || process.env.VITE_AI_API_KEY || window.VITE_AI_API_KEY
     // Use proxy endpoint to avoid CORS issues
     this.apiEndpoint = '/api/ai/chat/completions'
     this.model = 'gpt-3.5-turbo' // OpenAI model
@@ -18,6 +19,9 @@ class AIService {
     if (!this.apiKey) {
       console.error('❌ VITE_AI_API_KEY is not set in environment variables')
       console.error('Please check your .env file contains: VITE_AI_API_KEY=your_api_key_here')
+      console.error('🔍 import.meta.env.VITE_AI_API_KEY:', import.meta.env.VITE_AI_API_KEY)
+      console.error('🔍 process.env.VITE_AI_API_KEY:', process.env.VITE_AI_API_KEY)
+      console.error('🔍 window.VITE_AI_API_KEY:', window.VITE_AI_API_KEY)
     } else {
       console.log('✅ API key loaded successfully')
       console.log('🔍 API Key length:', this.apiKey.length)
@@ -29,6 +33,14 @@ class AIService {
     Object.keys(import.meta.env).forEach(key => {
       if (key.startsWith('VITE_')) {
         console.log(`${key}: ${import.meta.env[key] ? 'SET' : 'NOT SET'}`)
+      }
+    })
+    
+    // Debug process.env
+    console.log('🔍 All process.env variables:')
+    Object.keys(process.env || {}).forEach(key => {
+      if (key.startsWith('VITE_')) {
+        console.log(`${key}: ${process.env[key] ? 'SET' : 'NOT SET'}`)
       }
     })
   }
