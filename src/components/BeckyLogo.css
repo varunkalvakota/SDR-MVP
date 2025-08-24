@@ -1,0 +1,510 @@
+.becky-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.becky-face {
+  position: relative;
+  background: #ffdbac; /* Skin tone */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(255, 182, 193, 0.3);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.becky-logo:hover .becky-face {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(255, 182, 193, 0.4);
+}
+
+/* Sizes */
+.becky-logo.small .becky-face {
+  width: 40px;
+  height: 40px;
+}
+
+.becky-logo.medium .becky-face {
+  width: 60px;
+  height: 60px;
+}
+
+.becky-logo.large .becky-face {
+  width: 80px;
+  height: 80px;
+}
+
+.becky-logo.xlarge .becky-face {
+  width: 120px;
+  height: 120px;
+}
+
+/* Hair */
+.becky-hair {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  z-index: 1;
+}
+
+.becky-hair-main {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 60%;
+  background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #8b4513 100%);
+  border-radius: 50% 50% 0 0;
+  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.2);
+}
+
+.becky-hair-bangs {
+  position: absolute;
+  top: 5%;
+  left: 15%;
+  right: 15%;
+  height: 25%;
+  background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #8b4513 100%);
+  border-radius: 0 0 50% 50%;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.becky-hair-side {
+  position: absolute;
+  top: 15%;
+  width: 20%;
+  height: 40%;
+  background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #8b4513 100%);
+  border-radius: 50%;
+}
+
+.becky-hair-side.left {
+  left: 5%;
+  transform: rotate(-15deg);
+}
+
+.becky-hair-side.right {
+  right: 5%;
+  transform: rotate(15deg);
+}
+
+/* Face Skin */
+.becky-face-skin {
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  right: 15%;
+  bottom: 15%;
+  background: #ffdbac;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+/* Headband */
+.becky-headband {
+  position: absolute;
+  top: 8%;
+  left: 10%;
+  right: 10%;
+  height: 8%;
+  background: linear-gradient(135deg, #ff69b4 0%, #ff1493 50%, #ff69b4 100%);
+  border-radius: 20px;
+  z-index: 3;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.becky-headband-bow {
+  position: absolute;
+  top: -2px;
+  right: 15%;
+  width: 12px;
+  height: 8px;
+  background: #ff1493;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.becky-headband-bow::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 4px;
+  background: #ff1493;
+  border-radius: 1px;
+}
+
+/* Eyes */
+.becky-eyes {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 4;
+}
+
+.becky-eye {
+  position: relative;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.becky-logo.small .becky-eye {
+  width: 8px;
+  height: 8px;
+}
+
+.becky-logo.medium .becky-eye {
+  width: 12px;
+  height: 12px;
+}
+
+.becky-logo.large .becky-eye {
+  width: 16px;
+  height: 16px;
+}
+
+.becky-logo.xlarge .becky-eye {
+  width: 20px;
+  height: 20px;
+}
+
+.becky-eyelash {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background: #333;
+  border-radius: 1px;
+}
+
+.becky-pupil {
+  background: #333;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.becky-logo.small .becky-pupil {
+  width: 4px;
+  height: 4px;
+}
+
+.becky-logo.medium .becky-pupil {
+  width: 6px;
+  height: 6px;
+}
+
+.becky-logo.large .becky-pupil {
+  width: 8px;
+  height: 8px;
+}
+
+.becky-logo.xlarge .becky-pupil {
+  width: 10px;
+  height: 10px;
+}
+
+.becky-highlight {
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  width: 30%;
+  height: 30%;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+/* Nose */
+.becky-nose {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8%;
+  height: 8%;
+  background: #ffb6c1;
+  border-radius: 50%;
+  z-index: 4;
+}
+
+.becky-logo.small .becky-nose {
+  width: 6%;
+  height: 6%;
+}
+
+.becky-logo.large .becky-nose {
+  width: 10%;
+  height: 10%;
+}
+
+.becky-logo.xlarge .becky-nose {
+  width: 12%;
+  height: 12%;
+}
+
+/* Smile */
+.becky-smile {
+  position: absolute;
+  bottom: 25%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
+.becky-lip-top {
+  width: 40%;
+  height: 8%;
+  background: #ffb6c1;
+  border-radius: 0 0 50% 50%;
+  margin-bottom: 2px;
+}
+
+.becky-lip-bottom {
+  width: 50%;
+  height: 6%;
+  background: #ff69b4;
+  border-radius: 0 0 50% 50%;
+}
+
+.becky-logo.small .becky-lip-top,
+.becky-logo.small .becky-lip-bottom {
+  width: 35%;
+  height: 6%;
+}
+
+.becky-logo.large .becky-lip-top,
+.becky-logo.large .becky-lip-bottom {
+  width: 45%;
+  height: 10%;
+}
+
+.becky-logo.xlarge .becky-lip-top,
+.becky-logo.xlarge .becky-lip-bottom {
+  width: 50%;
+  height: 12%;
+}
+
+/* Cheeks */
+.becky-cheek {
+  position: absolute;
+  top: 45%;
+  width: 15%;
+  height: 12%;
+  background: #ffb6c1;
+  border-radius: 50%;
+  opacity: 0.6;
+  z-index: 4;
+}
+
+.becky-cheek.left {
+  left: 10%;
+}
+
+.becky-cheek.right {
+  right: 10%;
+}
+
+.becky-logo.small .becky-cheek {
+  width: 12%;
+  height: 10%;
+}
+
+.becky-logo.large .becky-cheek {
+  width: 18%;
+  height: 15%;
+}
+
+.becky-logo.xlarge .becky-cheek {
+  width: 20%;
+  height: 18%;
+}
+
+/* Sparkles */
+.becky-sparkles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sparkle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #ffd93d;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.becky-logo.small .sparkle {
+  width: 2px;
+  height: 2px;
+}
+
+.becky-logo.large .sparkle {
+  width: 4px;
+  height: 4px;
+}
+
+.becky-logo.xlarge .sparkle {
+  width: 5px;
+  height: 5px;
+}
+
+.sparkle.s1 {
+  top: 10%;
+  right: 15%;
+  animation: sparkle1 3s infinite;
+}
+
+.sparkle.s2 {
+  top: 20%;
+  left: 10%;
+  animation: sparkle2 3s infinite 1s;
+}
+
+.sparkle.s3 {
+  bottom: 15%;
+  right: 20%;
+  animation: sparkle3 3s infinite 2s;
+}
+
+/* Name */
+.becky-name {
+  font-weight: 600;
+  color: #ff69b4;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.becky-logo.small .becky-name {
+  font-size: 12px;
+}
+
+.becky-logo.large .becky-name {
+  font-size: 16px;
+}
+
+.becky-logo.xlarge .becky-name {
+  font-size: 20px;
+}
+
+/* Animations */
+@keyframes sparkle1 {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
+  }
+}
+
+@keyframes sparkle2 {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(-180deg);
+  }
+}
+
+@keyframes sparkle3 {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(90deg);
+  }
+}
+
+/* Eye movement animation */
+.becky-logo.animated .becky-pupil {
+  animation: blink 4s infinite;
+}
+
+@keyframes blink {
+  0%, 90%, 100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Hover effects */
+.becky-logo:hover .becky-pupil {
+  transform: scale(1.2);
+}
+
+.becky-logo:hover .becky-smile {
+  transform: translateX(-50%) scaleY(1.1);
+}
+
+.becky-logo:hover .becky-cheek {
+  opacity: 0.8;
+}
+
+/* Loading state */
+.becky-logo.loading .becky-face {
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Success state */
+.becky-logo.success .becky-face {
+  background: #ffdbac;
+}
+
+.becky-logo.success .becky-headband {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #4ade80 100%);
+}
+
+.becky-logo.success .becky-headband-bow {
+  background: #22c55e;
+}
+
+/* Error state */
+.becky-logo.error .becky-face {
+  background: #ffdbac;
+}
+
+.becky-logo.error .becky-headband {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 50%, #f87171 100%);
+}
+
+.becky-logo.error .becky-headband-bow {
+  background: #ef4444;
+}

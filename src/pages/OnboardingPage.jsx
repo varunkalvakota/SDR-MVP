@@ -193,11 +193,9 @@ const OnboardingPage = () => {
       return null
     }
     
-    const { data: { publicUrl } } = supabase.storage
-      .from('resumes')
-      .getPublicUrl(fileName)
-    
-    return publicUrl
+    // For private buckets, we need to use a signed URL or just return the file path
+    // The actual URL will be generated when needed for viewing
+    return fileName
   }
 
   const saveToSupabase = async () => {
@@ -227,21 +225,34 @@ const OnboardingPage = () => {
         preferred_industry: formData.preferredIndustry,
         salary_expectation: formData.salaryExpectation,
         work_style: formData.workStyle,
-        skills: formData.skills,
+        skills: formData.skills || [],
         challenges: formData.challenges,
         motivation: formData.motivation,
         availability: formData.availability,
         onboarding_completed: true
       }
       
-      // Insert or update user profile
-      const { data, error } = await supabase
+      console.log('Saving profile data:', profileData)
+      
+      // Skip the check and go straight to upsert since RLS is causing 406 errors
+      console.log('Skipping profile check due to RLS issues, going straight to upsert')
+      
+      // Use upsert with email as conflict key since that's where the duplicate is happening
+      const result = await supabase
         .from('user_profiles')
-        .upsert(profileData, { onConflict: 'id' })
+        .upsert(profileData, { onConflict: 'email' })
+      
+      const { data, error } = result
       
       if (error) {
         console.error('Supabase error:', error)
-        throw error
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        throw new Error(`Database error: ${error.message}`)
       }
       return true
       
@@ -271,6 +282,12 @@ const OnboardingPage = () => {
       setError('Please sign in to save your profile.')
       return
     }
+    
+    console.log('User data:', {
+      id: user.id,
+      email: user.email,
+      user_metadata: user.user_metadata
+    })
     
     const success = await saveToSupabase()
     if (success) {
@@ -612,11 +629,20 @@ const OnboardingPage = () => {
         
 
         
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
+                 {error && (
+           <div className="error-message">
+             <p>{error}</p>
+             <button 
+               onClick={() => {
+                 console.log('Current user:', user)
+                 console.log('Current form data:', formData)
+               }}
+               style={{ marginTop: '10px', padding: '5px 10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}
+             >
+               Debug Info (Check Console)
+             </button>
+           </div>
+         )}
         
                  <div className="onboarding-content" key={formKey}>
            {renderCurrentStep()}

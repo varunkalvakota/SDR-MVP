@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import AIResumeAnalysis from '../components/AIResumeAnalysis'
+import AdvancedFeatures from '../components/AdvancedFeatures'
 import { 
   FiUser, 
   FiTarget, 
@@ -19,7 +21,9 @@ import {
   FiLogOut,
   FiEdit,
   FiDownload,
-  FiArrowRight
+  FiArrowRight,
+  FiCpu,
+  FiZap
 } from 'react-icons/fi'
 import './DashboardPage.css'
 
@@ -260,6 +264,20 @@ const DashboardPage = () => {
               <FiBook />
               Resources
             </button>
+                    <button
+          className={`nav-item ${activeTab === 'ai-analysis' ? 'active' : ''}`}
+          onClick={() => setActiveTab('ai-analysis')}
+        >
+          <FiCpu />
+          AI Analysis
+        </button>
+        <button
+          className={`nav-item ${activeTab === 'advanced-features' ? 'active' : ''}`}
+          onClick={() => setActiveTab('advanced-features')}
+        >
+          <FiZap />
+          Advanced Features
+        </button>
           </nav>
         </div>
 
@@ -472,6 +490,17 @@ const DashboardPage = () => {
               </div>
             </div>
           )}
+
+                {activeTab === 'ai-analysis' && (
+        <div className="ai-analysis-tab">
+          <AIResumeAnalysis />
+        </div>
+      )}
+      {activeTab === 'advanced-features' && (
+        <div className="advanced-features-tab">
+          <AdvancedFeatures />
+        </div>
+      )}
         </div>
       </div>
     </div>

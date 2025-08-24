@@ -223,6 +223,21 @@ CREATE TABLE IF NOT EXISTS public.api_integrations (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- AI Analysis Results Storage
+CREATE TABLE IF NOT EXISTS public.ai_analysis_results (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+    analysis_type VARCHAR(100) NOT NULL, -- masterAnalysis, advancedAnalysis, skillAnalysis, etc.
+    analysis_title VARCHAR(200),
+    analysis_content TEXT NOT NULL,
+    resume_version VARCHAR(100), -- to track which resume version was analyzed
+    metadata JSONB, -- store additional data like scores, recommendations, etc.
+    is_favorite BOOLEAN DEFAULT FALSE,
+    tags TEXT[], -- for categorizing analyses
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Gamification & Achievements
 CREATE TABLE IF NOT EXISTS public.user_achievements (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -245,6 +260,7 @@ ALTER TABLE public.kpi_metrics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_coach_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.human_coach_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.api_integrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ai_analysis_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
 
 -- User can view own data
@@ -314,6 +330,19 @@ CREATE POLICY "Users can view own API logs" ON public.api_integrations
 
 CREATE POLICY "Users can insert own API logs" ON public.api_integrations
     FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
+
+-- AI Analysis Results policies
+CREATE POLICY "Users can view own analysis results" ON public.ai_analysis_results
+    FOR SELECT USING (auth.uid()::text = user_id::text);
+
+CREATE POLICY "Users can insert own analysis results" ON public.ai_analysis_results
+    FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
+
+CREATE POLICY "Users can update own analysis results" ON public.ai_analysis_results
+    FOR UPDATE USING (auth.uid()::text = user_id::text);
+
+CREATE POLICY "Users can delete own analysis results" ON public.ai_analysis_results
+    FOR DELETE USING (auth.uid()::text = user_id::text);
 
 -- Achievements policies
 CREATE POLICY "Users can view own achievements" ON public.user_achievements
