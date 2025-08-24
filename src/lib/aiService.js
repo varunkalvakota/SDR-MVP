@@ -4,8 +4,8 @@ class AIService {
   constructor() {
     // Try multiple ways to get the API key
     this.apiKey = import.meta.env.VITE_AI_API_KEY || process.env.VITE_AI_API_KEY || window.VITE_AI_API_KEY
-    // Use proxy endpoint to avoid CORS issues
-    this.apiEndpoint = '/api/ai/chat/completions'
+    // Use direct OpenAI API endpoint
+    this.apiEndpoint = 'https://api.openai.com/v1/chat/completions'
     this.model = 'gpt-3.5-turbo' // OpenAI model
     
     // Debug logging
