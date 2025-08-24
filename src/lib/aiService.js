@@ -212,6 +212,8 @@ class AIService {
     }
   }
 
+
+
   // Process manually entered text with AI
   async processManualTextWithAI(resumeText, systemPrompt, userPrompt = '') {
     try {

@@ -38,6 +38,7 @@ const OnboardingPage = () => {
     currentRole: '',
     experienceYears: '',
     resume: null,
+    linkedinUrl: '',
     
     // Step 2: Goals & Preferences
     careerGoal: '',
@@ -91,23 +92,24 @@ const OnboardingPage = () => {
 
       if (data && !error) {
         // Pre-fill form with existing data
-        setFormData({
-          firstName: data.first_name || '',
-          lastName: data.last_name || '',
-          email: data.email || '',
-          currentRole: data.current_position || '',
-          experienceYears: data.experience_years || '',
-          resume: null, // File object can't be restored from URL
-          careerGoal: data.career_goal || '',
-          timeline: data.timeline || '',
-          preferredIndustry: data.preferred_industry || '',
-          salaryExpectation: data.salary_expectation || '',
-          workStyle: data.work_style || '',
-          skills: data.skills || [],
-          challenges: data.challenges || '',
-          motivation: data.motivation || '',
-          availability: data.availability || ''
-        })
+                 setFormData({
+           firstName: data.first_name || '',
+           lastName: data.last_name || '',
+           email: data.email || '',
+           currentRole: data.current_position || '',
+           experienceYears: data.experience_years || '',
+           resume: null, // File object can't be restored from URL
+           linkedinUrl: data.linkedin_url || '',
+           careerGoal: data.career_goal || '',
+           timeline: data.timeline || '',
+           preferredIndustry: data.preferred_industry || '',
+           salaryExpectation: data.salary_expectation || '',
+           workStyle: data.work_style || '',
+           skills: data.skills || [],
+           challenges: data.challenges || '',
+           motivation: data.motivation || '',
+           availability: data.availability || ''
+         })
         
         // Check if user has some data but hasn't completed onboarding
         if (data.first_name && data.last_name && data.email && !data.onboarding_completed) {
@@ -120,43 +122,45 @@ const OnboardingPage = () => {
       
       // Pre-fill form with data from user metadata if available
       if (user.user_metadata && (user.user_metadata.first_name || user.user_metadata.last_name)) {
-        const newFormData = {
-          firstName: user.user_metadata.first_name || '',
-          lastName: user.user_metadata.last_name || '',
-          email: user.email || '',
-          currentRole: '',
-          experienceYears: '',
-          resume: null,
-          careerGoal: '',
-          timeline: '',
-          preferredIndustry: '',
-          salaryExpectation: '',
-          workStyle: '',
-          skills: [],
-          challenges: '',
-          motivation: '',
-          availability: ''
-        }
+                 const newFormData = {
+           firstName: user.user_metadata.first_name || '',
+           lastName: user.user_metadata.last_name || '',
+           email: user.email || '',
+           currentRole: '',
+           experienceYears: '',
+           resume: null,
+           linkedinUrl: '',
+           careerGoal: '',
+           timeline: '',
+           preferredIndustry: '',
+           salaryExpectation: '',
+           workStyle: '',
+           skills: [],
+           challenges: '',
+           motivation: '',
+           availability: ''
+         }
         setFormData(newFormData)
       } else {
         // Set email at least
-        const defaultFormData = {
-          firstName: '',
-          lastName: '',
-          email: user.email || '',
-          currentRole: '',
-          experienceYears: '',
-          resume: null,
-          careerGoal: '',
-          timeline: '',
-          preferredIndustry: '',
-          salaryExpectation: '',
-          workStyle: '',
-          skills: [],
-          challenges: '',
-          motivation: '',
-          availability: ''
-        }
+                 const defaultFormData = {
+           firstName: '',
+           lastName: '',
+           email: user.email || '',
+           currentRole: '',
+           experienceYears: '',
+           resume: null,
+           linkedinUrl: '',
+           careerGoal: '',
+           timeline: '',
+           preferredIndustry: '',
+           salaryExpectation: '',
+           workStyle: '',
+           skills: [],
+           challenges: '',
+           motivation: '',
+           availability: ''
+         }
         setFormData(defaultFormData)
       }
     }
@@ -211,26 +215,27 @@ const OnboardingPage = () => {
         resumeUrl = await uploadResume(formData.resume)
       }
       
-      // Prepare data for database
-      const profileData = {
-        id: user.id,
-        email: formData.email,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        current_position: formData.currentRole,
-        experience_years: formData.experienceYears,
-        resume_url: resumeUrl,
-        career_goal: formData.careerGoal,
-        timeline: formData.timeline,
-        preferred_industry: formData.preferredIndustry,
-        salary_expectation: formData.salaryExpectation,
-        work_style: formData.workStyle,
-        skills: formData.skills || [],
-        challenges: formData.challenges,
-        motivation: formData.motivation,
-        availability: formData.availability,
-        onboarding_completed: true
-      }
+                    // Prepare data for database
+                 const profileData = {
+           id: user.id,
+           email: formData.email,
+           first_name: formData.firstName,
+           last_name: formData.lastName,
+           current_position: formData.currentRole,
+           experience_years: formData.experienceYears,
+           resume_url: resumeUrl,
+           linkedin_url: formData.linkedinUrl,
+           career_goal: formData.careerGoal,
+           timeline: formData.timeline,
+           preferred_industry: formData.preferredIndustry,
+           salary_expectation: formData.salaryExpectation,
+           work_style: formData.workStyle,
+           skills: formData.skills || [],
+           challenges: formData.challenges,
+           motivation: formData.motivation,
+           availability: formData.availability,
+           onboarding_completed: true
+         }
       
       console.log('Saving profile data:', profileData)
       
@@ -243,6 +248,8 @@ const OnboardingPage = () => {
         .upsert(profileData, { onConflict: 'email' })
       
       const { data, error } = result
+      
+      console.log('Supabase result:', { data, error })
       
       if (error) {
         console.error('Supabase error:', error)
@@ -288,6 +295,14 @@ const OnboardingPage = () => {
       email: user.email,
       user_metadata: user.user_metadata
     })
+    
+    // Add form validation
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      setError('Please fill in all required fields (First Name, Last Name, Email).')
+      return
+    }
+    
+    console.log('Form data before save:', formData)
     
     const success = await saveToSupabase()
     if (success) {
@@ -349,23 +364,38 @@ const OnboardingPage = () => {
           </div>
         </div>
         
-        <div className="form-group">
-          <label>Email Address *</label>
-          <div className="input-with-badge">
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              placeholder="Enter your email"
-              required
-            />
-            {isNewUser && user?.email && (
-              <span className="pre-filled-badge">Pre-filled</span>
-            )}
+                           <div className="form-group">
+            <label>Email Address *</label>
+            <div className="input-with-badge">
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="Enter your email"
+                required
+              />
+              {isNewUser && user?.email && (
+                <span className="pre-filled-badge">Pre-filled</span>
+              )}
+            </div>
           </div>
-        </div>
-        
-        <div className="form-group">
+          
+          <div className="form-group">
+            <label>LinkedIn Profile URL</label>
+            <input
+              type="text"
+              value={formData.linkedinUrl}
+              onChange={(e) => handleInputChange('linkedinUrl', e.target.value)}
+              placeholder="https://linkedin.com/in/yourprofile"
+            />
+            <small>We'll analyze your LinkedIn profile to help optimize it for SDR roles</small>
+          </div>
+         
+
+         
+ 
+
+                 <div className="form-group">
           <label>Current Role</label>
           <select
             value={formData.currentRole}

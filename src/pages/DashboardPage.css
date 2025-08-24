@@ -249,6 +249,17 @@
   line-height: 1.5;
 }
 
+.linkedin-link {
+  color: #0077b5;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+.linkedin-link:hover {
+  text-decoration: underline;
+}
+
 .level-indicator {
   display: flex;
   align-items: center;

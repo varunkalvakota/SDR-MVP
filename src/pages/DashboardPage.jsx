@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import AIResumeAnalysis from '../components/AIResumeAnalysis'
 import AdvancedFeatures from '../components/AdvancedFeatures'
+import LinkedInAnalysis from '../components/LinkedInAnalysis'
+
 import { 
   FiUser, 
   FiTarget, 
@@ -23,7 +25,9 @@ import {
   FiDownload,
   FiArrowRight,
   FiCpu,
-  FiZap
+  FiZap,
+  FiLinkedin,
+
 } from 'react-icons/fi'
 import './DashboardPage.css'
 
@@ -271,13 +275,24 @@ const DashboardPage = () => {
           <FiCpu />
           AI Analysis
         </button>
-        <button
-          className={`nav-item ${activeTab === 'advanced-features' ? 'active' : ''}`}
-          onClick={() => setActiveTab('advanced-features')}
-        >
-          <FiZap />
-          Advanced Features
-        </button>
+                           <button
+            className={`nav-item ${activeTab === 'advanced-features' ? 'active' : ''}`}
+            onClick={() => setActiveTab('advanced-features')}
+          >
+            <FiZap />
+            Advanced Features
+          </button>
+          
+          <button
+            className={`nav-item ${activeTab === 'linkedin-analysis' ? 'active' : ''}`}
+            onClick={() => setActiveTab('linkedin-analysis')}
+          >
+            <FiLinkedin />
+            LinkedIn Analysis
+          </button>
+          
+         
+
           </nav>
         </div>
 
@@ -299,10 +314,20 @@ const DashboardPage = () => {
                     <h3>Personal Info</h3>
                   </div>
                   <div className="card-content">
-                    <p><strong>Name:</strong> {profile.first_name} {profile.last_name}</p>
-                    <p><strong>Email:</strong> {profile.email}</p>
-                    <p><strong>Current Role:</strong> {profile.current_position || 'Not specified'}</p>
-                    <p><strong>Experience:</strong> {profile.experience_years || 'Not specified'}</p>
+                                         <p><strong>Name:</strong> {profile.first_name} {profile.last_name}</p>
+                     <p><strong>Email:</strong> {profile.email}</p>
+                                           <p><strong>Current Role:</strong> {profile.current_position || 'Not specified'}</p>
+                      <p><strong>Experience:</strong> {profile.experience_years || 'Not specified'}</p>
+                      {profile.linkedin_url && (
+                        <p>
+                          <strong>LinkedIn:</strong> 
+                          <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="linkedin-link">
+                            View Profile
+                          </a>
+                        </p>
+                      )}
+                     
+
                   </div>
                 </div>
 
@@ -496,11 +521,20 @@ const DashboardPage = () => {
           <AIResumeAnalysis />
         </div>
       )}
-      {activeTab === 'advanced-features' && (
-        <div className="advanced-features-tab">
-          <AdvancedFeatures />
-        </div>
-      )}
+                     {activeTab === 'advanced-features' && (
+          <div className="advanced-features-tab">
+            <AdvancedFeatures />
+          </div>
+        )}
+        
+        {activeTab === 'linkedin-analysis' && (
+          <div className="linkedin-analysis-tab">
+            <LinkedInAnalysis />
+          </div>
+        )}
+        
+       
+
         </div>
       </div>
     </div>
