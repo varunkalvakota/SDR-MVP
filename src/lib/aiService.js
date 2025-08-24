@@ -20,7 +20,17 @@ class AIService {
       console.error('Please check your .env file contains: VITE_AI_API_KEY=your_api_key_here')
     } else {
       console.log('✅ API key loaded successfully')
+      console.log('🔍 API Key length:', this.apiKey.length)
+      console.log('🔍 API Key starts with:', this.apiKey.substring(0, 7))
     }
+    
+    // Debug all environment variables
+    console.log('🔍 All VITE_ environment variables:')
+    Object.keys(import.meta.env).forEach(key => {
+      if (key.startsWith('VITE_')) {
+        console.log(`${key}: ${import.meta.env[key] ? 'SET' : 'NOT SET'}`)
+      }
+    })
   }
 
   // Get the stored resume content from Supabase storage
