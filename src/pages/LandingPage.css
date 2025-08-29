@@ -32,9 +32,9 @@
   font-weight: 600;
   font-size: 1.25rem;
   color: #000000;
-  margin-right: auto;
   cursor: pointer;
   transition: all 0.2s ease;
+  z-index: 1001;
 }
 
 .nav-logo:hover {
@@ -58,16 +58,12 @@
   display: flex;
   gap: 2rem;
   align-items: center;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .nav-actions {
   display: flex;
   gap: 1rem;
   align-items: center;
-  margin-left: auto;
 }
 
 .nav-link {
@@ -119,6 +115,111 @@
 }
 
 .logout-btn:hover {
+  background: #b91c1c !important;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #000000;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+  background: #f3f4f6;
+}
+
+/* Mobile Menu */
+.mobile-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu.open {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.mobile-menu-links {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mobile-menu-actions {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-nav-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.mobile-nav-link:hover {
+  background-color: #f9fafb;
+  color: #000000;
+}
+
+.mobile-nav-link.login-btn {
+  background: transparent !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+  border-radius: 8px;
+}
+
+.mobile-nav-link.login-btn:hover {
+  background: #f9fafb !important;
+}
+
+.mobile-nav-link.signup-btn {
+  background: #000000 !important;
+  color: white !important;
+  border: 1px solid #000000;
+  border-radius: 8px;
+}
+
+.mobile-nav-link.signup-btn:hover {
+  background: #1f2937 !important;
+  transform: translateY(-1px);
+}
+
+.mobile-nav-link.logout-btn {
+  background: #dc2626 !important;
+  color: white !important;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-nav-link.logout-btn:hover {
   background: #b91c1c !important;
 }
 
@@ -1105,13 +1206,17 @@
     padding: 1.25rem 1rem;
   }
   
-  .nav-links {
-    gap: 1rem;
+  .nav-links,
+  .nav-actions {
+    display: none;
   }
   
-  .nav-link {
-    padding: 0.625rem 1rem;
-    font-size: 0.9rem;
+  .mobile-menu-toggle {
+    display: block;
+  }
+  
+  .mobile-menu {
+    display: block;
   }
   
   .logo-icon {
@@ -1128,20 +1233,25 @@
   
   .hero-headline {
     font-size: 2.5rem;
+    line-height: 1.2;
   }
   
   .hero-subheadline {
     font-size: 1.1rem;
+    margin-bottom: 2rem;
   }
   
   .hero-cta {
     padding: 1rem 2rem;
     font-size: 1.1rem;
+    width: 100%;
+    max-width: 300px;
   }
   
   .career-map {
     max-width: 300px;
     padding: 1.5rem;
+    margin: 0 auto;
   }
   
   .map-node {
@@ -1170,22 +1280,48 @@
   
   .persona-cards {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .persona-card {
+    padding: 1.5rem;
   }
   
   .principles-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .principle-card {
+    padding: 1.5rem;
   }
   
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .stat-card {
+    padding: 1.5rem;
   }
   
   .testimonials {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .testimonial-card {
+    padding: 1.5rem;
   }
   
   .steps-container {
     flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .step-card {
+    max-width: none;
+    padding: 2rem 1.5rem;
   }
   
   .step-connector {
@@ -1201,18 +1337,92 @@
   
   .cta-headline {
     font-size: 2.5rem;
+    line-height: 1.2;
+  }
+  
+  .cta-benefits {
+    max-width: none;
   }
   
   .dashboard-preview {
     max-width: 300px;
+    margin: 0 auto;
   }
 
   .pricing-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .pricing-card {
+    padding: 1.5rem;
   }
   
   .pricing-card.popular {
     transform: none;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .hero-headline {
+    font-size: 2rem;
+  }
+  
+  .hero-subheadline {
+    font-size: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.75rem;
+  }
+  
+  .section-subtitle {
+    font-size: 1rem;
+  }
+  
+  .cta-headline {
+    font-size: 2rem;
+  }
+  
+  .nav-container {
+    padding: 1rem 0.75rem;
+  }
+  
+  .hero-section {
+    padding: 3rem 1rem 4rem;
+  }
+  
+  .about-section,
+  .principles-section,
+  .proof-section,
+  .how-it-works-section,
+  .pricing-section,
+  .final-cta-section {
+    padding: 4rem 1rem;
+  }
+  
+  .career-map {
+    max-width: 280px;
+    padding: 1.25rem;
+  }
+  
+  .map-node {
+    padding: 0.625rem 0.875rem;
+  }
+  
+  .node-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  
+  .step-card {
+    padding: 1.5rem 1.25rem;
+  }
+  
+  .dashboard-preview {
+    max-width: 280px;
   }
 }
 

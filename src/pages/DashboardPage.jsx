@@ -37,13 +37,282 @@ const DashboardPage = () => {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('roadmap')
+  const [selectedMilestone, setSelectedMilestone] = useState(null)
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false)
+  const [dailyMissions, setDailyMissions] = useState([])
+  const [userXP, setUserXP] = useState(0)
+  const [streak, setStreak] = useState(0)
+  const [completedTasks, setCompletedTasks] = useState({})
 
   useEffect(() => {
     if (user) {
       fetchUserProfile()
     }
   }, [user])
+
+  useEffect(() => {
+    if (profile) {
+      generateDailyMissions()
+      loadUserProgress()
+    }
+  }, [profile])
+
+  const generateDailyMissions = () => {
+    const today = new Date().toDateString()
+    const lastGenerated = localStorage.getItem(`missions-generated-${user?.id}`)
+    
+    // Check if missions were already generated today
+    if (lastGenerated === today) {
+      const savedMissions = localStorage.getItem(`daily-missions-${user?.id}`)
+      if (savedMissions) {
+        setDailyMissions(JSON.parse(savedMissions))
+        return
+      }
+    }
+    
+    const roadmap = generateRoadmap()
+    if (!roadmap || !roadmap.milestones || roadmap.milestones.length === 0) {
+      // Fallback missions if no roadmap is available
+      const fallbackMissions = [
+        {
+          id: 'mission-fallback-1',
+          title: 'Complete your profile',
+          description: 'Fill out your onboarding information to get personalized recommendations',
+          xp: 25,
+          completed: false,
+          milestoneId: 1,
+          beckyTip: 'Take your time to provide accurate information - this helps us create the best roadmap for you!',
+          priority: 1
+        },
+        {
+          id: 'mission-fallback-2',
+          title: 'Explore the roadmap',
+          description: 'Check out your personalized career roadmap',
+          xp: 25,
+          completed: false,
+          milestoneId: 1,
+          beckyTip: 'Your roadmap is customized based on your goals and experience level.',
+          priority: 2
+        },
+        {
+          id: 'mission-fallback-3',
+          title: 'Set your first goal',
+          description: 'Choose a specific milestone to focus on this week',
+          xp: 30,
+          completed: false,
+          milestoneId: 1,
+          beckyTip: 'Start with something achievable - small wins build momentum!',
+          priority: 3
+        }
+      ]
+      
+      setDailyMissions(fallbackMissions)
+      localStorage.setItem(`daily-missions-${user?.id}`, JSON.stringify(fallbackMissions))
+      localStorage.setItem(`missions-generated-${user?.id}`, today)
+      return
+    }
+    
+    const currentMilestone = roadmap.milestones.find(m => m.status === 'in-progress') || roadmap.milestones[0]
+    if (!currentMilestone || !currentMilestone.tasks) {
+      setDailyMissions([])
+      return
+    }
+    
+    // Generate 2-3 prioritized daily missions from current milestone
+    const availableTasks = currentMilestone.tasks.filter(task => {
+      const taskKey = `task-completed-${user?.id}-${currentMilestone.id}-${task}`
+      return !localStorage.getItem(taskKey)
+    })
+    
+    const missions = availableTasks.slice(0, 3).map((task, index) => ({
+      id: `mission-${Date.now()}-${index}`,
+      title: task,
+      description: `Complete: ${task}`,
+      xp: 25 + (index * 5), // Slightly more XP for higher priority tasks
+      completed: false,
+      milestoneId: currentMilestone.id,
+      beckyTip: getBeckyTip(task, currentMilestone.title),
+      priority: index + 1
+    }))
+    
+    // If we don't have enough tasks, add some general missions
+    if (missions.length < 3) {
+      const generalMissions = [
+        {
+          id: `mission-general-${Date.now()}`,
+          title: 'Review your progress',
+          description: 'Check your roadmap progress and plan tomorrow\'s tasks',
+          xp: 20,
+          completed: false,
+          milestoneId: currentMilestone.id,
+          beckyTip: 'Regular review helps you stay on track and celebrate small wins!',
+          priority: missions.length + 1
+        }
+      ]
+      missions.push(...generalMissions.slice(0, 3 - missions.length))
+    }
+    
+    setDailyMissions(missions)
+    localStorage.setItem(`daily-missions-${user?.id}`, JSON.stringify(missions))
+    localStorage.setItem(`missions-generated-${user?.id}`, today)
+  }
+
+  const getBeckyTip = (task, milestoneTitle) => {
+    const tips = {
+      // Sales Foundation Tips
+      'Complete sales fundamentals course': 'Start with the basics! This foundation will make everything else easier. Try 30-minute sessions to avoid overwhelm.',
+      'Read 3 sales books': 'Choose books that match your learning style. Audiobooks count too! Start with "To Sell is Human" - it\'s perfect for beginners.',
+      'Join 5 sales communities': 'Quality over quantity. Engage actively in 2-3 communities rather than lurking in 10. Ask questions and share insights!',
+      'Practice elevator pitch': 'Record yourself and listen back. You\'ll be surprised what you catch! Practice in front of a mirror first.',
+      'Research SDR role responsibilities': 'Look at actual job postings to understand what companies really want. Focus on the requirements section.',
+      
+      // Transferable Skills Tips
+      'List 10 transferable skills': 'Think beyond obvious skills. Even organizing events counts as project management! Customer service = objection handling.',
+      'Create skill mapping document': 'Use a spreadsheet to map your skills to sales competencies. Be specific about how each skill applies.',
+      'Practice skill storytelling': 'Use the STAR method: Situation, Task, Action, Result. Keep stories under 2 minutes.',
+      'Get feedback from sales professionals': 'Be specific in your questions. "How can I improve my pitch?" is better than "Any advice?"',
+      'Update resume with sales focus': 'Use action verbs and quantify achievements when possible. "Increased customer satisfaction by 25%" sounds better than "helped customers".',
+      
+      // Networking Tips
+      'Connect with 50+ sales professionals': 'Personalize each connection request. Mention something specific about their profile or company.',
+      'Attend 3 sales events': 'Virtual events count! Come prepared with questions and follow up with new connections within 24 hours.',
+      'Join sales communities': 'Start with LinkedIn groups and Slack communities. Introduce yourself and share your goals.',
+      'Schedule 10 informational interviews': 'Keep interviews to 15-20 minutes. Have specific questions ready and always send a thank you note.',
+      'Create networking tracker': 'Use a simple spreadsheet to track who you\'ve connected with and when to follow up.',
+      
+      // Tools & Technology Tips
+      'Complete CRM certification': 'Start with free certifications like HubSpot Academy. They\'re recognized and comprehensive.',
+      'Learn LinkedIn Sales Navigator': 'Practice with the free trial first. Focus on building lists and finding prospects.',
+      'Practice with sales engagement tools': 'Many tools offer free trials. Try 2-3 to see which fits your style.',
+      'Create tool proficiency list': 'Rate yourself 1-5 on each tool. Focus on getting to level 3-4 on your top 3 tools.',
+      'Build sample sales sequences': 'Start with 3-5 touch points. Keep messages short and value-focused.',
+      
+      // Communication Tips
+      'Practice cold calling': 'Start with friends and family. Record calls and review them for improvement areas.',
+      'Master objection handling': 'Create a cheat sheet of common objections and your responses. Practice them out loud.',
+      'Develop discovery questions': 'Focus on open-ended questions that start with "what", "how", and "why".',
+      'Create sales scripts': 'Keep scripts conversational, not robotic. Practice until they feel natural.',
+      'Record and analyze calls': 'Listen for tone, pace, and clarity. Note where you lose the prospect\'s attention.',
+      
+      // Portfolio Tips
+      'Create 3 mock sales campaigns': 'Use real companies and scenarios. Include target personas and messaging.',
+      'Write customer case studies': 'Even if fictional, make them realistic. Include metrics and outcomes.',
+      'Document sales processes': 'Create step-by-step guides. Include best practices and common pitfalls.',
+      'Build presentation portfolio': 'Include different types: product demos, discovery calls, closing presentations.',
+      'Create sales metrics dashboard': 'Focus on key metrics like conversion rates, response rates, and pipeline velocity.',
+      
+      // Research Tips
+      'Create list of 50 target companies': 'Mix company sizes and industries. Research their recent news and challenges.',
+      'Research each company thoroughly': 'Look at their website, LinkedIn, recent news, and Glassdoor reviews.',
+      'Identify key decision makers': 'Use LinkedIn Sales Navigator and company websites. Note their titles and backgrounds.',
+      'Understand company challenges': 'Read their blog, press releases, and industry reports. Look for pain points.',
+      'Prepare company-specific pitches': 'Customize your value proposition for each company\'s specific needs.',
+      
+      // Application Tips
+      'Apply to 20 target companies': 'Quality over quantity. Customize each application with company-specific information.',
+      'Write personalized cover letters': 'Mention specific things about the company. Show you\'ve done your research.',
+      'Create follow-up sequences': 'Plan 3-5 touch points over 2-3 weeks. Mix email, LinkedIn, and phone.',
+      'Request referrals from network': 'Be specific about the role and company. Make it easy for them to help you.',
+      'Track application progress': 'Use a spreadsheet or CRM. Note dates, responses, and next steps.',
+      
+      // Interview Tips
+      'Practice common sales questions': 'Focus on behavioral questions. Use the STAR method for all responses.',
+      'Prepare STAR method stories': 'Have 5-7 stories ready. Practice telling them in under 2 minutes each.',
+      'Mock interview practice': 'Practice with friends or record yourself. Focus on confidence and clarity.',
+      'Research interview formats': 'Many sales interviews include role-plays. Practice common scenarios.',
+      'Prepare questions for interviewers': 'Ask about their challenges, team culture, and growth opportunities.'
+    }
+    
+    // Contextual tips based on milestone
+    const milestoneTips = {
+      'Build Sales Foundation': 'Start with the fundamentals - they\'re the building blocks of everything else!',
+      'Develop Transferable Skills': 'Your previous experience is valuable. Think about how it applies to sales.',
+      'Network with Sales Professionals': 'Networking is about building relationships, not just asking for jobs.',
+      'Master Sales Tools & Technology': 'Tools are enablers, not replacements for good sales skills.',
+      'Practice Sales Communication': 'Communication is a skill that improves with practice. Start small!',
+      'Build Sales Portfolio': 'Your portfolio shows what you can do, not just what you know.',
+      'Target & Research Companies': 'Research shows genuine interest and helps you stand out.',
+      'Apply Strategically': 'Quality applications beat quantity every time.',
+      'Ace Sales Interviews': 'Preparation builds confidence. Practice until it feels natural.'
+    }
+    
+    return tips[task] || milestoneTips[milestoneTitle] || `Focus on this task for 15-20 minutes today. Small progress adds up!`
+  }
+
+  const loadUserProgress = () => {
+    // Load user progress from localStorage or database
+    const savedProgress = localStorage.getItem(`user-progress-${user.id}`)
+    if (savedProgress) {
+      const progress = JSON.parse(savedProgress)
+      setUserXP(progress.xp || 0)
+      setStreak(progress.streak || 0)
+      setCompletedTasks(progress.completedTasks || {})
+    }
+  }
+
+  const completeMission = (missionId) => {
+    const mission = dailyMissions.find(m => m.id === missionId)
+    if (!mission) return
+    
+    // Update mission status immediately
+    setDailyMissions(prev => prev.map(m => 
+      m.id === missionId ? { ...m, completed: true } : m
+    ))
+    
+    // Award XP immediately
+    const newXP = userXP + mission.xp
+    setUserXP(newXP)
+    
+    // Update streak
+    const today = new Date().toDateString()
+    const lastCompletion = localStorage.getItem(`last-completion-${user?.id}`)
+    let newStreak = 1
+    
+    if (lastCompletion === today) {
+      newStreak = streak + 1
+    } else if (lastCompletion === new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()) {
+      // Yesterday - continue streak
+      newStreak = streak + 1
+    } else {
+      // Break in streak - reset to 1
+      newStreak = 1
+    }
+    
+    setStreak(newStreak)
+    
+    // Mark task as completed in milestone
+    const taskKey = `task-completed-${user?.id}-${mission.milestoneId}-${mission.title}`
+    localStorage.setItem(taskKey, 'true')
+    
+    // Save updated missions to localStorage
+    const updatedMissions = dailyMissions.map(m => 
+      m.id === missionId ? { ...m, completed: true } : m
+    )
+    localStorage.setItem(`daily-missions-${user?.id}`, JSON.stringify(updatedMissions))
+    
+    // Save progress
+    const progress = {
+      xp: newXP,
+      streak: newStreak,
+      completedTasks: { ...completedTasks, [missionId]: true }
+    }
+    
+    localStorage.setItem(`user-progress-${user?.id}`, JSON.stringify(progress))
+    localStorage.setItem(`last-completion-${user?.id}`, today)
+    
+    // Mission completed successfully
+  }
+
+  const openMilestoneModal = (milestone) => {
+    setSelectedMilestone(milestone)
+    setShowMilestoneModal(true)
+  }
+
+  const closeMilestoneModal = () => {
+    setShowMilestoneModal(false)
+    setSelectedMilestone(null)
+  }
 
   const fetchUserProfile = async () => {
     try {
@@ -56,16 +325,14 @@ const DashboardPage = () => {
       if (error) {
         // If no profile found, redirect to onboarding
         if (error.code === 'PGRST116') {
-          console.log('No profile found, redirecting to onboarding...')
-          navigate('/onboarding')
-          return
+                  navigate('/onboarding')
+        return
         }
         throw error
       }
 
       // Check if onboarding is completed
       if (!data.onboarding_completed) {
-        console.log('Onboarding not completed, redirecting...')
         navigate('/onboarding')
         return
       }
@@ -80,18 +347,30 @@ const DashboardPage = () => {
   }
 
   const generateRoadmap = () => {
-    if (!profile) return null
+    // Always generate a roadmap, even without profile data
+    try {
+      const roadmap = {
+        currentLevel: profile ? getCurrentLevel(profile.current_position, profile.experience_years) : 'Entry Level',
+        targetLevel: profile ? getTargetLevel(profile.career_goal) : 'SDR',
+        milestones: generateMilestones(profile || {}),
+        timeline: profile?.timeline || '1-year',
+        skills: profile?.skills || [],
+        recommendations: generateRecommendations(profile || {})
+      }
 
-    const roadmap = {
-      currentLevel: getCurrentLevel(profile.current_position, profile.experience_years),
-      targetLevel: getTargetLevel(profile.career_goal),
-      milestones: generateMilestones(profile),
-      timeline: profile.timeline || '1-year',
-      skills: profile.skills || [],
-      recommendations: generateRecommendations(profile)
+      return roadmap
+    } catch (error) {
+      console.error('Error generating roadmap:', error)
+      // Return a default roadmap even if there's an error
+      return {
+        currentLevel: 'Entry Level',
+        targetLevel: 'SDR',
+        milestones: generateMilestones({}),
+        timeline: '1-year',
+        skills: [],
+        recommendations: generateRecommendations({})
+      }
     }
-
-    return roadmap
   }
 
   const getCurrentLevel = (position, experience) => {
@@ -119,33 +398,335 @@ const DashboardPage = () => {
   const generateMilestones = (profile) => {
     const milestones = []
     
-    if (profile.career_goal === 'promotion') {
-      milestones.push(
-        { id: 1, title: 'Master SDR Fundamentals', status: 'completed', timeframe: 'Month 1-2' },
-        { id: 2, title: 'Improve Lead Qualification', status: 'in-progress', timeframe: 'Month 2-3' },
-        { id: 3, title: 'Develop Closing Skills', status: 'pending', timeframe: 'Month 3-4' },
-        { id: 4, title: 'Build Pipeline Management', status: 'pending', timeframe: 'Month 4-5' },
-        { id: 5, title: 'Prepare for AE Transition', status: 'pending', timeframe: 'Month 5-6' }
-      )
-    } else if (profile.career_goal === 'management') {
-      milestones.push(
-        { id: 1, title: 'Excel in Current Role', status: 'completed', timeframe: 'Month 1-2' },
-        { id: 2, title: 'Develop Leadership Skills', status: 'in-progress', timeframe: 'Month 2-3' },
-        { id: 3, title: 'Mentor Junior SDRs', status: 'pending', timeframe: 'Month 3-4' },
-        { id: 4, title: 'Learn Management Tools', status: 'pending', timeframe: 'Month 4-5' },
-        { id: 5, title: 'Apply for Management Role', status: 'pending', timeframe: 'Month 5-6' }
-      )
-    } else {
-      milestones.push(
-        { id: 1, title: 'Assess Current Skills', status: 'completed', timeframe: 'Week 1-2' },
-        { id: 2, title: 'Identify Skill Gaps', status: 'in-progress', timeframe: 'Week 2-3' },
-        { id: 3, title: 'Develop Action Plan', status: 'pending', timeframe: 'Week 3-4' },
-        { id: 4, title: 'Execute Learning Plan', status: 'pending', timeframe: 'Month 2-3' },
-        { id: 5, title: 'Apply New Skills', status: 'pending', timeframe: 'Month 3-4' }
-      )
+    try {
+      // Epic 3: Roadmap Engine v1 - 10-step roadmap for break-into-sales users
+      // Always generate the advanced 10-step roadmap regardless of career goal
+      const currentRole = profile.current_position || profile.currentRole || 'entry-level'
+      const experienceYears = profile.experience_years || profile.experienceYears || '0-1'
+      const personaOrder = getPersonaOrder(currentRole, experienceYears)
+      
+      const allSteps = [
+        {
+          id: 1,
+          title: 'Build Sales Foundation',
+          status: 'completed',
+          timeframe: 'Week 1-2',
+          description: 'Understand the fundamentals of sales and the SDR role',
+          whyItMatters: 'Sales is a skill that can be learned. Understanding the basics gives you confidence and credibility when applying for roles.',
+          examples: ['Read "To Sell is Human" by Daniel Pink', 'Watch sales training videos', 'Join sales communities on LinkedIn'],
+          tasks: [
+            'Complete sales fundamentals course',
+            'Read 3 sales books',
+            'Join 5 sales communities',
+            'Practice elevator pitch',
+            'Research SDR role responsibilities'
+          ],
+          resources: [
+            { name: 'Sales Fundamentals Course', url: 'https://www.coursera.org/learn/sales-fundamentals', type: 'course' },
+            { name: 'To Sell is Human', url: 'https://www.amazon.com/Sell-Human-Surprising-Moving-Others/dp/1594631905', type: 'book' },
+            { name: 'SDR Role Guide', url: 'https://www.saleshacker.com/sdr-role/', type: 'article' }
+          ],
+          xp: 100,
+          personaPriority: 1
+        },
+        {
+          id: 2,
+          title: 'Develop Transferable Skills',
+          status: 'in-progress',
+          timeframe: 'Week 2-3',
+          description: 'Identify and leverage skills from your current role that apply to sales',
+          whyItMatters: 'Your previous experience is valuable! Customer service, communication, and problem-solving skills directly translate to sales success.',
+          examples: ['Customer service → objection handling', 'Teaching → presentation skills', 'Retail → relationship building'],
+          tasks: [
+            'List 10 transferable skills',
+            'Create skill mapping document',
+            'Practice skill storytelling',
+            'Get feedback from sales professionals',
+            'Update resume with sales focus'
+          ],
+          resources: [
+            { name: 'Transferable Skills Guide', url: 'https://www.linkedin.com/learning/transferable-skills', type: 'course' },
+            { name: 'Skill Mapping Template', url: '#', type: 'template' },
+            { name: 'Resume Writing for Sales', url: 'https://www.saleshacker.com/sales-resume/', type: 'article' }
+          ],
+          xp: 150,
+          personaPriority: 2
+        },
+        {
+          id: 3,
+          title: 'Network with Sales Professionals',
+          status: 'pending',
+          timeframe: 'Week 3-4',
+          description: 'Build relationships with people in sales to learn and get referrals',
+          whyItMatters: '80% of jobs are found through networking. Sales professionals can provide insights, referrals, and mentorship.',
+          examples: ['Connect with 50 SDRs on LinkedIn', 'Attend sales meetups', 'Join sales Slack communities'],
+          tasks: [
+            'Connect with 50+ sales professionals',
+            'Attend 3 sales events',
+            'Join 5 sales communities',
+            'Schedule 10 informational interviews',
+            'Create networking tracker'
+          ],
+          resources: [
+            { name: 'LinkedIn Networking Guide', url: 'https://www.linkedin.com/learning/linkedin-networking', type: 'course' },
+            { name: 'Sales Meetups Directory', url: 'https://www.meetup.com/topics/sales/', type: 'directory' },
+            { name: 'Informational Interview Script', url: '#', type: 'template' }
+          ],
+          xp: 200,
+          personaPriority: 3
+        },
+        {
+          id: 4,
+          title: 'Master Sales Tools & Technology',
+          status: 'pending',
+          timeframe: 'Week 4-5',
+          description: 'Learn the essential tools and technology used in modern sales',
+          whyItMatters: 'Sales is increasingly technology-driven. Knowing the tools shows you can hit the ground running.',
+          examples: ['CRM systems (Salesforce, HubSpot)', 'Sales engagement platforms', 'LinkedIn Sales Navigator'],
+          tasks: [
+            'Complete CRM certification',
+            'Learn LinkedIn Sales Navigator',
+            'Practice with sales engagement tools',
+            'Create tool proficiency list',
+            'Build sample sales sequences'
+          ],
+          resources: [
+            { name: 'Salesforce Trailhead', url: 'https://trailhead.salesforce.com/', type: 'course' },
+            { name: 'LinkedIn Sales Navigator', url: 'https://business.linkedin.com/sales-solutions/sales-navigator', type: 'tool' },
+            { name: 'Sales Tool Directory', url: 'https://www.g2.com/categories/sales-intelligence', type: 'directory' }
+          ],
+          xp: 250,
+          personaPriority: 4
+        },
+        {
+          id: 5,
+          title: 'Create Compelling Sales Materials',
+          status: 'pending',
+          timeframe: 'Week 5-6',
+          description: 'Develop professional materials that showcase your sales potential',
+          whyItMatters: 'Your materials are your first impression. Professional, sales-focused content demonstrates your commitment and understanding.',
+          examples: ['Sales-focused resume', 'LinkedIn profile optimization', 'Portfolio of sales projects'],
+          tasks: [
+            'Rewrite resume for sales roles',
+            'Optimize LinkedIn profile',
+            'Create sales portfolio',
+            'Write sample sales emails',
+            'Prepare sales pitch deck'
+          ],
+          resources: [
+            { name: 'Sales Resume Template', url: '#', type: 'template' },
+            { name: 'LinkedIn Profile Optimization', url: 'https://www.linkedin.com/learning/linkedin-profile-optimization', type: 'course' },
+            { name: 'Sales Email Templates', url: '#', type: 'template' }
+          ],
+          xp: 300,
+          personaPriority: 5
+        },
+        {
+          id: 6,
+          title: 'Practice Sales Conversations',
+          status: 'pending',
+          timeframe: 'Week 6-7',
+          description: 'Develop confidence and skills through regular sales practice',
+          whyItMatters: 'Sales is a performance skill. Regular practice builds confidence and improves your ability to handle real situations.',
+          examples: ['Role-play with friends', 'Practice cold calling', 'Record and review conversations'],
+          tasks: [
+            'Practice 20 sales conversations',
+            'Record and review calls',
+            'Role-play objection handling',
+            'Practice discovery questions',
+            'Get feedback from mentors'
+          ],
+          resources: [
+            { name: 'Sales Conversation Practice', url: '#', type: 'course' },
+            { name: 'Objection Handling Guide', url: '#', type: 'guide' },
+            { name: 'Discovery Question Templates', url: '#', type: 'template' }
+          ],
+          xp: 350,
+          personaPriority: 6
+        },
+        {
+          id: 7,
+          title: 'Build Sales Portfolio',
+          status: 'pending',
+          timeframe: 'Week 7-8',
+          description: 'Create tangible evidence of your sales capabilities',
+          whyItMatters: 'A portfolio demonstrates your skills and shows employers you\'re serious about sales.',
+          examples: ['Mock sales campaigns', 'Customer case studies', 'Sales process documentation'],
+          tasks: [
+            'Create 3 mock sales campaigns',
+            'Write customer case studies',
+            'Document sales processes',
+            'Build presentation portfolio',
+            'Create sales metrics dashboard'
+          ],
+          resources: [
+            { name: 'Portfolio Building Guide', url: '#', type: 'guide' },
+            { name: 'Case Study Templates', url: '#', type: 'template' },
+            { name: 'Sales Metrics Guide', url: '#', type: 'guide' }
+          ],
+          xp: 400,
+          personaPriority: 7
+        },
+        {
+          id: 8,
+          title: 'Target & Research Companies',
+          status: 'pending',
+          timeframe: 'Week 8-9',
+          description: 'Identify and research companies where you want to work',
+          whyItMatters: 'Targeted applications are more effective than mass applications. Research shows genuine interest and preparation.',
+          examples: ['Create target company list', 'Research company culture', 'Identify key decision makers'],
+          tasks: [
+            'Create list of 50 target companies',
+            'Research each company thoroughly',
+            'Identify key decision makers',
+            'Understand company challenges',
+            'Prepare company-specific pitches'
+          ],
+          resources: [
+            { name: 'Company Research Template', url: '#', type: 'template' },
+            { name: 'Decision Maker Research', url: '#', type: 'guide' },
+            { name: 'Company Culture Research', url: '#', type: 'guide' }
+          ],
+          xp: 450,
+          personaPriority: 8
+        },
+        {
+          id: 9,
+          title: 'Apply Strategically',
+          status: 'pending',
+          timeframe: 'Week 9-10',
+          description: 'Apply to roles with personalized, strategic approaches',
+          whyItMatters: 'Quality over quantity. Personalized applications show you\'ve done your homework and are genuinely interested.',
+          examples: ['Personalized cover letters', 'Follow-up sequences', 'Referral requests'],
+          tasks: [
+            'Apply to 20 target companies',
+            'Write personalized cover letters',
+            'Create follow-up sequences',
+            'Request referrals from network',
+            'Track application progress'
+          ],
+          resources: [
+            { name: 'Cover Letter Templates', url: '#', type: 'template' },
+            { name: 'Follow-up Sequence Guide', url: '#', type: 'guide' },
+            { name: 'Application Tracker', url: '#', type: 'tool' }
+          ],
+          xp: 500,
+          personaPriority: 9
+        },
+        {
+          id: 10,
+          title: 'Ace Sales Interviews',
+          status: 'pending',
+          timeframe: 'Week 10-12',
+          description: 'Prepare thoroughly for sales interviews and assessments',
+          whyItMatters: 'Sales interviews often include role-plays and assessments. Preparation is key to demonstrating your skills.',
+          examples: ['Practice common questions', 'Prepare STAR stories', 'Mock interview practice'],
+          tasks: [
+            'Practice common sales questions',
+            'Prepare STAR method stories',
+            'Mock interview practice',
+            'Research interview formats',
+            'Prepare questions for interviewers'
+          ],
+          resources: [
+            { name: 'Sales Interview Guide', url: '#', type: 'guide' },
+            { name: 'STAR Method Template', url: '#', type: 'template' },
+            { name: 'Mock Interview Practice', url: '#', type: 'tool' }
+          ],
+          xp: 600,
+          personaPriority: 10
+        }
+      ]
+      
+      // Sort by persona priority
+      return allSteps.sort((a, b) => a.personaPriority - b.personaPriority)
+    } catch (error) {
+      console.error('Error generating milestones:', error)
+      // Return the full advanced roadmap even if there's an error
+      return [
+        {
+          id: 1,
+          title: 'Build Sales Foundation',
+          status: 'in-progress',
+          timeframe: 'Week 1-2',
+          description: 'Understand the fundamentals of sales and the SDR role',
+          whyItMatters: 'Sales is a skill that can be learned. Understanding the basics gives you confidence and credibility when applying for roles.',
+          examples: ['Read "To Sell is Human" by Daniel Pink', 'Watch sales training videos', 'Join sales communities on LinkedIn'],
+          tasks: [
+            'Complete sales fundamentals course',
+            'Read 3 sales books',
+            'Join 5 sales communities',
+            'Practice elevator pitch',
+            'Research SDR role responsibilities'
+          ],
+          resources: [
+            { name: 'Sales Fundamentals Course', url: 'https://www.coursera.org/learn/sales-fundamentals', type: 'course' },
+            { name: 'To Sell is Human', url: 'https://www.amazon.com/Sell-Human-Surprising-Moving-Others/dp/1594631905', type: 'book' },
+            { name: 'SDR Role Guide', url: 'https://www.saleshacker.com/sdr-role/', type: 'article' }
+          ],
+          xp: 100,
+          personaPriority: 1
+        },
+        {
+          id: 2,
+          title: 'Develop Transferable Skills',
+          status: 'pending',
+          timeframe: 'Week 2-3',
+          description: 'Identify and leverage skills from your current role that apply to sales',
+          whyItMatters: 'Your previous experience is valuable! Customer service, communication, and problem-solving skills directly translate to sales success.',
+          examples: ['Customer service → objection handling', 'Teaching → presentation skills', 'Retail → relationship building'],
+          tasks: [
+            'List 10 transferable skills',
+            'Create skill mapping document',
+            'Practice skill storytelling',
+            'Get feedback from sales professionals',
+            'Update resume with sales focus'
+          ],
+          resources: [
+            { name: 'Transferable Skills Guide', url: 'https://www.linkedin.com/learning/transferable-skills', type: 'course' },
+            { name: 'Skill Mapping Template', url: '#', type: 'template' },
+            { name: 'Resume Writing for Sales', url: 'https://www.saleshacker.com/sales-resume/', type: 'article' }
+          ],
+          xp: 150,
+          personaPriority: 2
+        },
+        {
+          id: 3,
+          title: 'Network with Sales Professionals',
+          status: 'pending',
+          timeframe: 'Week 3-4',
+          description: 'Build relationships with people in sales to learn and get referrals',
+          whyItMatters: '80% of jobs are found through networking. Sales professionals can provide insights, referrals, and mentorship.',
+          examples: ['Connect with 50 SDRs on LinkedIn', 'Attend sales meetups', 'Join sales Slack communities'],
+          tasks: [
+            'Connect with 50+ sales professionals',
+            'Attend 3 sales events',
+            'Join 5 sales communities',
+            'Schedule 10 informational interviews',
+            'Create networking tracker'
+          ],
+          resources: [
+            { name: 'LinkedIn Networking Guide', url: 'https://www.linkedin.com/learning/linkedin-networking', type: 'course' },
+            { name: 'Sales Meetups Directory', url: 'https://www.meetup.com/topics/sales/', type: 'directory' },
+            { name: 'Informational Interview Script', url: '#', type: 'template' }
+          ],
+          xp: 200,
+          personaPriority: 3
+        }
+      ]
     }
+  }
 
-    return milestones
+  const getPersonaOrder = (currentRole, experienceYears) => {
+    // Persona logic for break-into-sales users
+    if (currentRole === 'retail' || currentRole === 'customer-service') {
+      return 'customer-facing'
+    } else if (currentRole === 'student' || experienceYears === '0-1') {
+      return 'recent-grad'
+    } else if (currentRole === 'support' || currentRole === 'admin') {
+      return 'support-role'
+    }
+    return 'general'
   }
 
   const generateRecommendations = (profile) => {
@@ -241,13 +822,6 @@ const DashboardPage = () => {
         <div className="dashboard-sidebar">
           <nav className="dashboard-nav">
             <button 
-              className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
-              onClick={() => setActiveTab('overview')}
-            >
-              <FiUser />
-              Overview
-            </button>
-            <button 
               className={`nav-item ${activeTab === 'roadmap' ? 'active' : ''}`}
               onClick={() => setActiveTab('roadmap')}
             >
@@ -262,37 +836,40 @@ const DashboardPage = () => {
               Progress
             </button>
             <button 
+              className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              <FiUser />
+              Overview
+            </button>
+            <button 
               className={`nav-item ${activeTab === 'resources' ? 'active' : ''}`}
               onClick={() => setActiveTab('resources')}
             >
               <FiBook />
               Resources
             </button>
-                    <button
-          className={`nav-item ${activeTab === 'ai-analysis' ? 'active' : ''}`}
-          onClick={() => setActiveTab('ai-analysis')}
-        >
-          <FiCpu />
-          AI Analysis
-        </button>
-                           <button
-            className={`nav-item ${activeTab === 'advanced-features' ? 'active' : ''}`}
-            onClick={() => setActiveTab('advanced-features')}
-          >
-            <FiZap />
-            Advanced Features
-          </button>
-          
-          <button
-            className={`nav-item ${activeTab === 'linkedin-analysis' ? 'active' : ''}`}
-            onClick={() => setActiveTab('linkedin-analysis')}
-          >
-            <FiLinkedin />
-            LinkedIn Analysis
-          </button>
-          
-         
-
+            <button
+              className={`nav-item ${activeTab === 'ai-analysis' ? 'active' : ''}`}
+              onClick={() => setActiveTab('ai-analysis')}
+            >
+              <FiCpu />
+              AI Analysis
+            </button>
+            <button
+              className={`nav-item ${activeTab === 'advanced-features' ? 'active' : ''}`}
+              onClick={() => setActiveTab('advanced-features')}
+            >
+              <FiZap />
+              Advanced Features
+            </button>
+            <button
+              className={`nav-item ${activeTab === 'linkedin-analysis' ? 'active' : ''}`}
+              onClick={() => setActiveTab('linkedin-analysis')}
+            >
+              <FiLinkedin />
+              LinkedIn Analysis
+            </button>
           </nav>
         </div>
 
@@ -381,28 +958,116 @@ const DashboardPage = () => {
 
           {activeTab === 'roadmap' && (
             <div className="roadmap-tab">
-              <div className="roadmap-header">
-                <h1>Your Personalized Career Roadmap</h1>
-                <p>From {roadmap.currentLevel} to {roadmap.targetLevel}</p>
+              {/* XP and Progress Header */}
+              <div className="roadmap-progress-header">
+                <div className="xp-display">
+                  <div className="xp-circle">
+                    <span className="xp-number">{userXP}</span>
+                    <span className="xp-label">XP</span>
+                  </div>
+                  <div className="streak-display">
+                    <span className="streak-number">{streak}</span>
+                    <span className="streak-label">Day Streak</span>
+                  </div>
+                </div>
+                <div className="progress-summary">
+                  <h2>Your Career Journey</h2>
+                  <p>Level {Math.floor(userXP / 100) + 1} • {roadmap.milestones.filter(m => m.status === 'completed').length}/{roadmap.milestones.length} Milestones Complete</p>
+                </div>
               </div>
 
-              <div className="roadmap-timeline">
-                {roadmap.milestones.map((milestone, index) => (
-                  <div key={milestone.id} className={`milestone ${milestone.status}`}>
-                    <div className="milestone-icon">
-                      {milestone.status === 'completed' && <FiCheckCircle />}
-                      {milestone.status === 'in-progress' && <FiClock />}
-                      {milestone.status === 'pending' && <FiCalendar />}
-                    </div>
-                    <div className="milestone-content">
-                      <h3>{milestone.title}</h3>
-                      <p className="timeframe">{milestone.timeframe}</p>
-                      <div className={`status-badge ${milestone.status}`}>
-                        {milestone.status.replace('-', ' ')}
+              {/* Daily Missions Section */}
+              <div className="daily-missions-section">
+                <div className="missions-header">
+                  <h3><FiTarget /> Today's Missions</h3>
+                  <p>Complete these tasks to earn XP and advance your career</p>
+                </div>
+                <div className="missions-grid">
+                                  {dailyMissions.map((mission) => (
+                  <div key={mission.id} className={`mission-card ${mission.completed ? 'completed' : ''}`}>
+                    <div className="mission-header">
+                      <div className="mission-title-section">
+                        <span className="mission-priority">#{mission.priority}</span>
+                        <div className="mission-xp">+{mission.xp} XP</div>
                       </div>
+                      <button 
+                        className={`mission-complete-btn ${mission.completed ? 'completed' : ''}`}
+                        onClick={() => !mission.completed && completeMission(mission.id)}
+                        disabled={mission.completed}
+                      >
+                        {mission.completed ? <FiCheckCircle /> : <FiCheckCircle />}
+                      </button>
+                    </div>
+                    <h4>{mission.title}</h4>
+                    <p>{mission.description}</p>
+                    <div className="becky-tip">
+                      <span className="tip-icon">💡</span>
+                      <span className="tip-text">
+                        <strong>Becky Lite:</strong> {mission.beckyTip}
+                      </span>
                     </div>
                   </div>
                 ))}
+                </div>
+              </div>
+
+              {/* Roadmap Timeline */}
+              <div className="roadmap-timeline-section">
+                <div className="timeline-header">
+                  <h3><FiMap /> Your 10-Step Roadmap</h3>
+                  <p>Click any milestone to see detailed information and resources</p>
+                </div>
+                
+                                <div className="roadmap-timeline">
+                  {roadmap.milestones && roadmap.milestones.length > 0 ? (
+                    roadmap.milestones.map((milestone, index) => (
+                      <div key={milestone.id} className={`milestone ${milestone.status}`}>
+                        <div className="milestone-icon">
+                          {milestone.status === 'completed' && <FiCheckCircle />}
+                          {milestone.status === 'in-progress' && <FiClock />}
+                          {milestone.status === 'pending' && <FiCalendar />}
+                        </div>
+                        <div className="milestone-content" onClick={() => openMilestoneModal(milestone)}>
+                          <div className="milestone-header">
+                            <h3>{milestone.title}</h3>
+                            <div className="milestone-meta">
+                              <span className="milestone-xp">+{milestone.xp} XP</span>
+                              <span className="timeframe">{milestone.timeframe}</span>
+                              <div className={`status-badge ${milestone.status}`}>
+                                {milestone.status.replace('-', ' ')}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <p className="milestone-description">{milestone.description}</p>
+                          
+                          <div className="milestone-preview">
+                            <div className="preview-tasks">
+                              <span className="preview-label">Key Tasks:</span>
+                              <span className="preview-text">{milestone.tasks.slice(0, 2).join(', ')}...</span>
+                            </div>
+                            <div className="preview-resources">
+                              <span className="preview-label">Resources:</span>
+                              <span className="preview-text">{milestone.resources.length} available</span>
+                            </div>
+                          </div>
+                          
+                          <div className="milestone-cta">
+                            <span className="cta-text">Click to view details</span>
+                            <FiArrowRight />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-milestones">
+                      <p>No milestones available. Please complete your profile setup.</p>
+                      <button onClick={() => navigate('/onboarding')} className="setup-profile-btn">
+                        Complete Profile Setup
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -537,6 +1202,87 @@ const DashboardPage = () => {
 
         </div>
       </div>
+
+      {/* Milestone Detail Modal */}
+      {showMilestoneModal && selectedMilestone && (
+        <div className="modal-overlay" onClick={closeMilestoneModal}>
+          <div className="milestone-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeMilestoneModal}>×</button>
+            
+            <div className="modal-header">
+              <div className="milestone-modal-icon">
+                {selectedMilestone.status === 'completed' && <FiCheckCircle />}
+                {selectedMilestone.status === 'in-progress' && <FiClock />}
+                {selectedMilestone.status === 'pending' && <FiCalendar />}
+              </div>
+              <h2>{selectedMilestone.title}</h2>
+              <div className="modal-meta">
+                <span className="modal-xp">+{selectedMilestone.xp} XP</span>
+                <span className="modal-timeframe">{selectedMilestone.timeframe}</span>
+                <div className={`modal-status-badge ${selectedMilestone.status}`}>
+                  {selectedMilestone.status.replace('-', ' ')}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-content">
+              <div className="why-it-matters">
+                <h3>Why This Matters</h3>
+                <p>{selectedMilestone.whyItMatters}</p>
+                <div className="examples">
+                  <h4>Examples:</h4>
+                  <ul>
+                    {selectedMilestone.examples.map((example, index) => (
+                      <li key={index}>{example}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="modal-tasks">
+                <h3>Key Tasks</h3>
+                <ul className="modal-tasks-list">
+                  {selectedMilestone.tasks.map((task, index) => (
+                    <li key={index} className="modal-task-item">
+                      <span className="task-text">{task}</span>
+                      <button className="task-checkbox">
+                        <FiCheckCircle />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="modal-resources">
+                <h3>Resources</h3>
+                <div className="modal-resources-grid">
+                  {selectedMilestone.resources.map((resource, index) => (
+                    <a 
+                      key={index} 
+                      href={resource.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="modal-resource-card"
+                    >
+                      <div className="resource-type">{resource.type}</div>
+                      <h4>{resource.name}</h4>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="modal-action-btn primary">
+                <FiEdit /> Mark as Complete
+              </button>
+              <button className="modal-action-btn secondary">
+                <FiDownload /> Export This Step
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

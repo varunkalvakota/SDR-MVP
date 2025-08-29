@@ -1,53 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
+// Your Supabase credentials
+const supabaseUrl = 'https://upctqvobvdgqqyxrjajp.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwY3Rxdm9idmRncXF5eHJqYWpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTE1MDYsImV4cCI6MjA3MDI2NzUwNn0.RrY3DQ5UsRia-ZWZKuO5PCRPm1TqTJWM0BYIPLvzGQg'
 
 if (supabaseAnonKey.includes('service_role')) {
   console.error('🚨 SECURITY WARNING: Never use service_role key in frontend code!')
   throw new Error('Invalid key type detected')
 }
 
-const hasRealCredentials = 
-  supabaseUrl !== 'https://placeholder.supabase.co' && 
-  supabaseAnonKey !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder' &&
-  supabaseUrl.includes('supabase.co') && 
-  supabaseAnonKey.length > 50
-
-let supabase
-
-if (hasRealCredentials) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey)
-} else {
-  supabase = {
-    auth: {
-      signUp: () => Promise.resolve({ 
-        data: null, 
-        error: { message: 'Please configure Supabase credentials in your .env file' } 
-      }),
-      signInWithPassword: () => Promise.resolve({ 
-        data: null, 
-        error: { message: 'Please configure Supabase credentials in your .env file' } 
-      }),
-      signOut: () => Promise.resolve({ error: null }),
-      resetPasswordForEmail: () => Promise.resolve({ 
-        data: null, 
-        error: { message: 'Please configure Supabase credentials in your .env file' } 
-      }),
-      getUser: () => Promise.resolve({ data: { user: null } }),
-      onAuthStateChange: (callback) => {
-        setTimeout(() => callback('SIGNED_OUT', null), 0)
-        return { 
-          data: { 
-            subscription: { 
-              unsubscribe: () => {} 
-            } 
-          } 
-        }
-      }
-    }
-  }
-}
+// Create Supabase client
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export { supabase }
 

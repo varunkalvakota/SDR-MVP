@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import SupabaseSetup from '../components/SupabaseSetup'
 import { LoginModal, SignupModal, ResetPasswordModal } from '../components/AuthModals'
 import { 
   FiFileText, 
@@ -17,7 +16,9 @@ import {
   FiArrowRight,
   FiMap,
   FiClipboard,
-  FiShield
+  FiShield,
+  FiMenu,
+  FiX
 } from 'react-icons/fi'
 import './LandingPage.css'
 
@@ -28,6 +29,7 @@ const LandingPage = () => {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [shouldCheckOnboarding, setShouldCheckOnboarding] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -59,6 +61,14 @@ const LandingPage = () => {
     setIsLoginModalOpen(false)
     setIsSignupModalOpen(false)
     setIsResetModalOpen(false)
+  }
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
   }
 
   const checkOnboardingStatus = async () => {
@@ -126,18 +136,10 @@ const LandingPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
-  
-  const isSupabaseConfigured = 
-    supabaseUrl !== 'https://placeholder.supabase.co' && 
-    supabaseAnonKey !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder' &&
-    supabaseUrl.includes('supabase.co') && 
-    supabaseAnonKey.length > 50
+
 
   return (
     <div className="landing-page">
-      {!isSupabaseConfigured && <SupabaseSetup />}
       
       
       <nav className="navbar">
@@ -166,6 +168,36 @@ const LandingPage = () => {
               <>
                 <button onClick={openLoginModal} className="nav-link login-btn">Login</button>
                 <button onClick={openSignupModal} className="nav-link signup-btn">Sign Up</button>
+              </>
+            )}
+          </div>
+
+          <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+            {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+          <div className="mobile-menu-links">
+            <button onClick={() => { scrollToSection('features'); closeMobileMenu(); }} className="mobile-nav-link">Features</button>
+            <a href="#pricing" onClick={closeMobileMenu} className="mobile-nav-link">Pricing</a>
+            <button onClick={() => { scrollToSection('about'); closeMobileMenu(); }} className="mobile-nav-link">About</button>
+            <a href="#contact" onClick={closeMobileMenu} className="mobile-nav-link">Contact</a>
+          </div>
+          
+          <div className="mobile-menu-actions">
+            {user ? (
+              <>
+                <Link to="/dashboard" onClick={closeMobileMenu} className="mobile-nav-link">Dashboard</Link>
+                <button onClick={() => { handleSignOut(); closeMobileMenu(); }} className="mobile-nav-link logout-btn">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => { openLoginModal(); closeMobileMenu(); }} className="mobile-nav-link login-btn">Login</button>
+                <button onClick={() => { openSignupModal(); closeMobileMenu(); }} className="mobile-nav-link signup-btn">Sign Up</button>
               </>
             )}
           </div>
