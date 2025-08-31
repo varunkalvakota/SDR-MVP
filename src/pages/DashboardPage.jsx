@@ -27,6 +27,8 @@ import {
   FiCpu,
   FiZap,
   FiLinkedin,
+  FiStar,
+  FiLock,
 
 } from 'react-icons/fi'
 import './DashboardPage.css'
@@ -305,13 +307,107 @@ const DashboardPage = () => {
   }
 
   const openMilestoneModal = (milestone) => {
-    setSelectedMilestone(milestone)
-    setShowMilestoneModal(true)
+    const roadmap = generateRoadmap()
+    
+    // Check if this milestone is accessible (previous milestone is completed)
+    const previousMilestone = roadmap.milestones.find(m => m.id === milestone.id - 1)
+    
+    if (milestone.id === 1 || (previousMilestone && previousMilestone.status === 'completed')) {
+      // First milestone is always accessible, or previous milestone is completed
+      setSelectedMilestone(milestone)
+      setShowMilestoneModal(true)
+    } else {
+      // Show alert that previous milestone must be completed first
+      alert(`You must complete the previous milestone before accessing "${milestone.title}"!`)
+    }
   }
 
   const closeMilestoneModal = () => {
     setShowMilestoneModal(false)
     setSelectedMilestone(null)
+  }
+
+  const navigateToNextMilestone = (nextMilestoneId) => {
+    const roadmap = generateRoadmap()
+    const nextMilestone = roadmap.milestones.find(m => m.id === nextMilestoneId)
+    
+    if (nextMilestone) {
+      // Check if current milestone is completed
+      const currentMilestone = roadmap.milestones.find(m => m.id === selectedMilestone.id)
+      if (currentMilestone && currentMilestone.status === 'completed') {
+        setSelectedMilestone(nextMilestone)
+        // Keep the modal open but show the next milestone
+      } else {
+        // Show alert that current milestone must be completed first
+        alert('You must complete the current milestone before viewing the next one!')
+      }
+    } else {
+      // If no next milestone, close the modal
+      closeMilestoneModal()
+    }
+  }
+
+  const markMilestoneComplete = (milestone) => {
+    // Update the milestone status to completed
+    const roadmap = generateRoadmap()
+    const updatedMilestones = roadmap.milestones.map(m => 
+      m.id === milestone.id ? { ...m, status: 'completed' } : m
+    )
+    
+    // Update the roadmap with the new milestone status
+    // In a real app, this would save to the database
+    console.log('Milestone marked as complete:', milestone.title)
+    
+    // Update the selected milestone to show the new status
+    setSelectedMilestone({ ...milestone, status: 'completed' })
+    
+    // Show success message
+    alert(`Congratulations! You've completed "${milestone.title}"!`)
+  }
+
+  const exportMilestone = (milestone) => {
+    // Create the content for export
+    const exportContent = `
+SDR ROADMAP - MILESTONE EXPORT
+================================
+
+MILESTONE: ${milestone.title}
+Status: ${milestone.status}
+Timeframe: ${milestone.timeframe}
+XP: +${milestone.xp}
+Estimated Time: ${milestone.estimatedTime || '4-6 hours'}
+Difficulty: ${milestone.difficulty || 'Intermediate'}
+
+WHY THIS MATTERS:
+${milestone.whyItMatters}
+
+EXAMPLES:
+${milestone.examples.map(example => `• ${example}`).join('\n')}
+
+KEY TASKS:
+${milestone.tasks.map(task => `□ ${task}`).join('\n')}
+
+RESOURCES:
+${milestone.resources.map(resource => `• ${resource.type.toUpperCase()}: ${resource.name}${resource.duration ? ` (${resource.duration})` : ''}`).join('\n')}
+
+PRO TIPS:
+• Start Small: Focus on one task at a time. Don't try to complete everything at once.
+• Time Management: Block 2-3 hours per week for this milestone. Consistency beats intensity.
+• Get Support: Join our community to connect with others working on the same goals.
+
+Generated on: ${new Date().toLocaleDateString()}
+    `.trim()
+
+    // Create and download the file
+    const blob = new Blob([exportContent], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `milestone-${milestone.id}-${milestone.title.toLowerCase().replace(/\s+/g, '-')}.txt`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   const fetchUserProfile = async () => {
@@ -411,46 +507,54 @@ const DashboardPage = () => {
           title: 'Build Sales Foundation',
           status: 'completed',
           timeframe: 'Week 1-2',
-          description: 'Understand the fundamentals of sales and the SDR role',
-          whyItMatters: 'Sales is a skill that can be learned. Understanding the basics gives you confidence and credibility when applying for roles.',
+          description: 'Master the fundamentals of sales and understand what makes a successful SDR',
+          whyItMatters: 'Sales is a skill that can be learned. Understanding the basics gives you confidence and credibility when applying for roles. This foundation will be your competitive advantage.',
           examples: ['Read "To Sell is Human" by Daniel Pink', 'Watch sales training videos', 'Join sales communities on LinkedIn'],
           tasks: [
-            'Complete sales fundamentals course',
-            'Read 3 sales books',
-            'Join 5 sales communities',
-            'Practice elevator pitch',
-            'Research SDR role responsibilities'
+            'Complete sales fundamentals course (2 hours)',
+            'Read 3 essential sales books',
+            'Join 5 active sales communities',
+            'Practice elevator pitch 10 times',
+            'Research SDR role responsibilities and metrics'
           ],
           resources: [
-            { name: 'Sales Fundamentals Course', url: 'https://www.coursera.org/learn/sales-fundamentals', type: 'course' },
-            { name: 'To Sell is Human', url: 'https://www.amazon.com/Sell-Human-Surprising-Moving-Others/dp/1594631905', type: 'book' },
-            { name: 'SDR Role Guide', url: 'https://www.saleshacker.com/sdr-role/', type: 'article' }
+            { name: 'Sales Fundamentals Course', url: 'https://www.coursera.org/learn/sales-fundamentals', type: 'course', duration: '2 hours' },
+            { name: 'To Sell is Human', url: 'https://www.amazon.com/Sell-Human-Surprising-Moving-Others/dp/1594631905', type: 'book', duration: '6 hours' },
+            { name: 'SDR Role Guide', url: 'https://www.saleshacker.com/sdr-role/', type: 'article', duration: '15 min' },
+            { name: 'Sales Psychology Basics', url: '#', type: 'video', duration: '45 min' }
           ],
           xp: 100,
-          personaPriority: 1
+          personaPriority: 1,
+          estimatedTime: '8-10 hours',
+          difficulty: 'Beginner',
+          skills: ['Sales Fundamentals', 'Psychology', 'Communication']
         },
         {
           id: 2,
           title: 'Develop Transferable Skills',
           status: 'in-progress',
           timeframe: 'Week 2-3',
-          description: 'Identify and leverage skills from your current role that apply to sales',
-          whyItMatters: 'Your previous experience is valuable! Customer service, communication, and problem-solving skills directly translate to sales success.',
+          description: 'Transform your existing experience into powerful sales assets',
+          whyItMatters: 'Your previous experience is valuable! Customer service, communication, and problem-solving skills directly translate to sales success. This step helps you position yourself as a strong candidate.',
           examples: ['Customer service → objection handling', 'Teaching → presentation skills', 'Retail → relationship building'],
           tasks: [
-            'List 10 transferable skills',
-            'Create skill mapping document',
-            'Practice skill storytelling',
-            'Get feedback from sales professionals',
-            'Update resume with sales focus'
+            'Audit and list 15+ transferable skills',
+            'Create detailed skill mapping document',
+            'Practice skill storytelling with 3 people',
+            'Get feedback from 2 sales professionals',
+            'Rewrite resume with sales-focused language'
           ],
           resources: [
-            { name: 'Transferable Skills Guide', url: 'https://www.linkedin.com/learning/transferable-skills', type: 'course' },
-            { name: 'Skill Mapping Template', url: '#', type: 'template' },
-            { name: 'Resume Writing for Sales', url: 'https://www.saleshacker.com/sales-resume/', type: 'article' }
+            { name: 'Transferable Skills Guide', url: 'https://www.linkedin.com/learning/transferable-skills', type: 'course', duration: '1.5 hours' },
+            { name: 'Skill Mapping Template', url: '#', type: 'template', duration: '30 min' },
+            { name: 'Resume Writing for Sales', url: 'https://www.saleshacker.com/sales-resume/', type: 'article', duration: '20 min' },
+            { name: 'Storytelling for Sales', url: '#', type: 'video', duration: '1 hour' }
           ],
           xp: 150,
-          personaPriority: 2
+          personaPriority: 2,
+          estimatedTime: '6-8 hours',
+          difficulty: 'Beginner',
+          skills: ['Self-Assessment', 'Storytelling', 'Resume Writing']
         },
         {
           id: 3,
@@ -1014,51 +1118,76 @@ const DashboardPage = () => {
               {/* Roadmap Timeline */}
               <div className="roadmap-timeline-section">
                 <div className="timeline-header">
-                  <h3><FiMap /> Your 10-Step Roadmap</h3>
-                  <p>Click any milestone to see detailed information and resources</p>
+                  <h3><FiMap /> Your Personalized Career Roadmap</h3>
+                  <p>Follow this proven 10-step path to break into tech sales and land your dream role</p>
+                  <div className="roadmap-stats">
+                    <div className="stat">
+                      <span className="stat-number">{roadmap.milestones.length}</span>
+                      <span className="stat-label">Total Steps</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-number">{roadmap.milestones.reduce((sum, m) => sum + m.xp, 0)}</span>
+                      <span className="stat-label">Total XP</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-number">{roadmap.milestones.filter(m => m.status === 'completed').length}</span>
+                      <span className="stat-label">Completed</span>
+                    </div>
+                  </div>
                 </div>
                 
                                 <div className="roadmap-timeline">
                   {roadmap.milestones && roadmap.milestones.length > 0 ? (
-                    roadmap.milestones.map((milestone, index) => (
-                      <div key={milestone.id} className={`milestone ${milestone.status}`}>
-                        <div className="milestone-icon">
-                          {milestone.status === 'completed' && <FiCheckCircle />}
-                          {milestone.status === 'in-progress' && <FiClock />}
-                          {milestone.status === 'pending' && <FiCalendar />}
-                        </div>
-                        <div className="milestone-content" onClick={() => openMilestoneModal(milestone)}>
-                          <div className="milestone-header">
-                            <h3>{milestone.title}</h3>
-                            <div className="milestone-meta">
-                              <span className="milestone-xp">+{milestone.xp} XP</span>
-                              <span className="timeframe">{milestone.timeframe}</span>
-                              <div className={`status-badge ${milestone.status}`}>
-                                {milestone.status.replace('-', ' ')}
+                    roadmap.milestones.map((milestone, index) => {
+                      const previousMilestone = roadmap.milestones.find(m => m.id === milestone.id - 1)
+                      const isAccessible = milestone.id === 1 || (previousMilestone && previousMilestone.status === 'completed')
+                      
+                      return (
+                        <div key={milestone.id} className={`milestone ${milestone.status} ${!isAccessible ? 'locked' : ''}`}>
+                          <div className="milestone-icon">
+                            {milestone.status === 'completed' && <FiCheckCircle />}
+                            {milestone.status === 'in-progress' && <FiClock />}
+                            {milestone.status === 'pending' && <FiCalendar />}
+                          </div>
+                          <div className="milestone-content" onClick={() => openMilestoneModal(milestone)}>
+                            <div className="milestone-header">
+                              <h3>{milestone.title}</h3>
+                              <div className="milestone-meta">
+                                <span className="milestone-xp">+{milestone.xp} XP</span>
+                                <span className="timeframe">{milestone.timeframe}</span>
+                                <div className={`status-badge ${milestone.status}`}>
+                                  {milestone.status.replace('-', ' ')}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          
-                          <p className="milestone-description">{milestone.description}</p>
-                          
-                          <div className="milestone-preview">
-                            <div className="preview-tasks">
-                              <span className="preview-label">Key Tasks:</span>
-                              <span className="preview-text">{milestone.tasks.slice(0, 2).join(', ')}...</span>
+                            
+                            <p className="milestone-description">{milestone.description}</p>
+                            
+                            <div className="milestone-preview">
+                              <div className="preview-tasks">
+                                <span className="preview-label">Key Tasks:</span>
+                                <span className="preview-text">{milestone.tasks.slice(0, 2).join(', ')}...</span>
+                              </div>
+                              <div className="preview-meta">
+                                <div className="preview-resources">
+                                  <span className="preview-label">Resources:</span>
+                                  <span className="preview-text">{milestone.resources.length} available</span>
+                                </div>
+                                <div className="preview-time">
+                                  <FiClock />
+                                  <span>{milestone.estimatedTime || '4-6 hours'}</span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="preview-resources">
-                              <span className="preview-label">Resources:</span>
-                              <span className="preview-text">{milestone.resources.length} available</span>
+                            
+                            <div className="milestone-cta">
+                              <span className="cta-text">Click to view details</span>
+                              <FiArrowRight />
                             </div>
-                          </div>
-                          
-                          <div className="milestone-cta">
-                            <span className="cta-text">Click to view details</span>
-                            <FiArrowRight />
                           </div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    })
                   ) : (
                     <div className="no-milestones">
                       <p>No milestones available. Please complete your profile setup.</p>
@@ -1205,8 +1334,8 @@ const DashboardPage = () => {
 
       {/* Milestone Detail Modal */}
       {showMilestoneModal && selectedMilestone && (
-        <div className="modal-overlay" onClick={closeMilestoneModal}>
-          <div className="milestone-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="milestone-modal-overlay" onClick={closeMilestoneModal}>
+          <div className="milestone-modal-container" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={closeMilestoneModal}>×</button>
             
             <div className="modal-header">
@@ -1221,6 +1350,20 @@ const DashboardPage = () => {
                 <span className="modal-timeframe">{selectedMilestone.timeframe}</span>
                 <div className={`modal-status-badge ${selectedMilestone.status}`}>
                   {selectedMilestone.status.replace('-', ' ')}
+                </div>
+              </div>
+              <div className="modal-details">
+                <div className="detail-item">
+                  <FiClock />
+                  <span>{selectedMilestone.estimatedTime || '4-6 hours'}</span>
+                </div>
+                <div className="detail-item">
+                  <FiTrendingUp />
+                  <span>{selectedMilestone.difficulty || 'Intermediate'}</span>
+                </div>
+                <div className="detail-item">
+                  <FiTarget />
+                  <span>{selectedMilestone.skills ? selectedMilestone.skills.slice(0, 2).join(', ') : 'Sales Skills'}</span>
                 </div>
               </div>
             </div>
@@ -1264,19 +1407,106 @@ const DashboardPage = () => {
                       rel="noopener noreferrer"
                       className="modal-resource-card"
                     >
-                      <div className="resource-type">{resource.type}</div>
+                      <div className="resource-header">
+                        <div className="resource-type">{resource.type}</div>
+                        {resource.duration && (
+                          <div className="resource-duration">
+                            <FiClock />
+                            <span>{resource.duration}</span>
+                          </div>
+                        )}
+                      </div>
                       <h4>{resource.name}</h4>
                     </a>
                   ))}
                 </div>
               </div>
+
+              <div className="milestone-progress">
+                <h3>Your Progress</h3>
+                <div className="progress-circle">
+                  <div className="progress-ring">
+                    <div className="progress-text">
+                      <span className="progress-percentage">
+                        {selectedMilestone.status === 'completed' ? '100%' : selectedMilestone.status === 'in-progress' ? '50%' : '0%'}
+                      </span>
+                      <span className="progress-label">Complete</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="milestone-tips">
+                <h3>Pro Tips</h3>
+                <div className="tips-list">
+                  <div className="tip-item">
+                    <div className="tip-icon">
+                      <FiStar />
+                    </div>
+                    <div className="tip-content">
+                      <h4>Start Small</h4>
+                      <p>Focus on one task at a time. Don't try to complete everything at once.</p>
+                    </div>
+                  </div>
+                  <div className="tip-item">
+                    <div className="tip-icon">
+                      <FiClock />
+                    </div>
+                    <div className="tip-content">
+                      <h4>Time Management</h4>
+                      <p>Block 2-3 hours per week for this milestone. Consistency beats intensity.</p>
+                    </div>
+                  </div>
+                  <div className="tip-item">
+                    <div className="tip-icon">
+                      <FiUsers />
+                    </div>
+                    <div className="tip-content">
+                      <h4>Get Support</h4>
+                      <p>Join our community to connect with others working on the same goals.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="milestone-next">
+                <h3>What's Next</h3>
+                {selectedMilestone.status === 'completed' ? (
+                  <div className="next-milestone" onClick={() => navigateToNextMilestone(selectedMilestone.id + 1)}>
+                    <div className="next-icon">
+                      <FiArrowRight />
+                    </div>
+                    <div className="next-content">
+                      <h4>Step {selectedMilestone.id + 1}</h4>
+                      <p>Great job! Click here to continue to the next milestone.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="next-milestone locked">
+                    <div className="next-icon">
+                      <FiLock />
+                    </div>
+                    <div className="next-content">
+                      <h4>Step {selectedMilestone.id + 1}</h4>
+                      <p>Complete this milestone to unlock the next step.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="modal-actions">
-              <button className="modal-action-btn primary">
-                <FiEdit /> Mark as Complete
+              <button 
+                className="modal-action-btn primary"
+                onClick={() => markMilestoneComplete(selectedMilestone)}
+                disabled={selectedMilestone.status === 'completed'}
+              >
+                <FiEdit /> {selectedMilestone.status === 'completed' ? 'Completed!' : 'Mark as Complete'}
               </button>
-              <button className="modal-action-btn secondary">
+              <button 
+                className="modal-action-btn secondary"
+                onClick={() => exportMilestone(selectedMilestone)}
+              >
                 <FiDownload /> Export This Step
               </button>
             </div>

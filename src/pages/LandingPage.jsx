@@ -305,6 +305,24 @@ const LandingPage = () => {
                   <h3 className="course-title">Break Into Tech Sales</h3>
                   <p className="course-description">Break into tech sales & build a $100K+ career from scratch, regardless of your previous knowledge or experience.</p>
                 </div>
+                <div className="course-features">
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Resume & LinkedIn Optimization</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Interview Prep & Mock Calls</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Cold Email Templates</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Job Search Strategy</span>
+                  </div>
+                </div>
                 <div className="course-meta">
                   <div className="course-duration">
                     <FiClock />
@@ -324,6 +342,24 @@ const LandingPage = () => {
                   </div>
                   <h3 className="course-title">SDR To AE Accelerator</h3>
                   <p className="course-description">Become a top-performing SDR & get promoted into a $150-$200K+ AE job by leveraging proven systems.</p>
+                </div>
+                <div className="course-features">
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Performance Optimization</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Promotion Strategy</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>AE Skill Development</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Leadership Training</span>
+                  </div>
                 </div>
                 <div className="course-meta">
                   <div className="course-duration">
@@ -345,6 +381,24 @@ const LandingPage = () => {
                   <h3 className="course-title">AE Mastery</h3>
                   <p className="course-description">Scale your AE career to new levels by setting a new standard of excellence at your company & becoming #1.</p>
                 </div>
+                <div className="course-features">
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Advanced Closing Techniques</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Pipeline Management</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Deal Strategy & Negotiation</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Team Leadership Skills</span>
+                  </div>
+                </div>
                 <div className="course-meta">
                   <div className="course-duration">
                     <FiClock />
@@ -364,6 +418,24 @@ const LandingPage = () => {
                   </div>
                   <h3 className="course-title">Cold Call Mastery</h3>
                   <p className="course-description">Master cold-calling. Go from hesitant to high-performer on every cold call.</p>
+                </div>
+                <div className="course-features">
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Opening Scripts & Hooks</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Objection Handling</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Call Flow Optimization</span>
+                  </div>
+                  <div className="feature-item">
+                    <FiCheck />
+                    <span>Performance Tracking</span>
+                  </div>
                 </div>
                 <div className="course-meta">
                   <div className="course-duration">

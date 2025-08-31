@@ -683,6 +683,27 @@
   font-size: 1rem;
 }
 
+.course-features {
+  margin: 1.5rem 0;
+  padding: 0 1rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.feature-item svg {
+  color: #10b981;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
 .course-meta {
   display: flex;
   justify-content: center;
