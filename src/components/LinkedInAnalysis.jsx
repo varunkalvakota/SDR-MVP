@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { aiService } from '../lib/aiService'
 
 import { 
   FiLinkedin, 
@@ -58,12 +59,12 @@ const LinkedInAnalysis = () => {
     setError('')
 
     try {
-      // Simulate LinkedIn analysis using the URL from their profile
-      const mockAnalysis = await simulateLinkedInAnalysis(profile.linkedin_url)
-      setAnalysis(mockAnalysis)
+      // Use AI to analyze LinkedIn profile and provide SDR optimization recommendations
+      const aiAnalysis = await performAILinkedInAnalysis(profile)
+      setAnalysis(aiAnalysis)
       
       // Save analysis to database
-      await saveLinkedInAnalysis(mockAnalysis)
+      await saveLinkedInAnalysis(aiAnalysis)
     } catch (error) {
       console.error('Error analyzing LinkedIn:', error)
       setError('Failed to analyze LinkedIn profile. Please try again.')
@@ -72,63 +73,137 @@ const LinkedInAnalysis = () => {
     }
   }
 
-  const simulateLinkedInAnalysis = async (linkedinUrl) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Mock analysis data
+  const performAILinkedInAnalysis = async (profile) => {
+    try {
+      // Use the dedicated LinkedIn analysis method
+      const aiResponse = await aiService.analyzeLinkedInProfile(profile)
+      
+      // Parse the AI response
+      let analysisData
+      try {
+        // Try to parse as JSON first
+        analysisData = JSON.parse(aiResponse)
+      } catch (parseError) {
+        // If JSON parsing fails, create a structured response from the text
+        analysisData = createStructuredAnalysisFromText(aiResponse, profile)
+      }
+
+      return analysisData
+    } catch (error) {
+      console.error('AI analysis failed:', error)
+      // Fallback to enhanced mock data based on profile
+      return createFallbackAnalysis(profile)
+    }
+  }
+
+  const createStructuredAnalysisFromText = (aiText, profile) => {
+    // Extract key information from AI text response
+    const profileScore = extractScore(aiText, 'profile') || 75
+    const optimizationScore = extractScore(aiText, 'optimization') || 80
+    const sdrScore = extractScore(aiText, 'SDR|readiness') || 70
+
     return {
-      profileScore: 72,
-      optimizationScore: 85,
+      profileScore,
+      optimizationScore,
       recommendations: [
         {
           category: 'Headline',
-          current: 'Sales Representative at Company XYZ',
-          suggested: 'SDR Pivot | 120% to target | Books first meetings',
+          current: 'Current headline from profile',
+          suggested: extractSuggestion(aiText, 'headline') || 'SDR Pivot | Results-driven | Relationship Builder',
           priority: 'high',
           impact: 'High visibility to recruiters'
         },
         {
           category: 'About Section',
-          current: 'Experienced sales professional...',
-          suggested: 'I\'m pivoting into SDR because I love building relationships and driving results. Recent wins: Increased sales 25% and closed 15 deals/month. In the last 30 days I built a one-pager and booked 3 HM chats. If you\'re hiring SDRs, I\'d value 5 minutes of feedback on my week-one plan.',
+          current: 'Current about section',
+          suggested: extractSuggestion(aiText, 'about') || 'I\'m transitioning to SDR roles because I love building relationships and driving results...',
           priority: 'high',
           impact: 'Shows SDR readiness and specific wins'
-        },
-        {
-          category: 'Featured Content',
-          current: 'No featured content',
-          suggested: 'Add 60s Loom video, one-pager, and thank-you recap',
-          priority: 'medium',
-          impact: 'Demonstrates skills and preparation'
-        },
-        {
-          category: 'Experience Bullets',
-          current: 'Responsible for sales activities',
-          suggested: 'Increased upsells 18% by asking one question at minute one',
-          priority: 'medium',
-          impact: 'Quantified achievements stand out'
         }
       ],
-      metrics: {
-        profileViews: 45,
-        connectionRequests: 12,
-        engagementRate: 3.2,
-        recruiterViews: 8
-      },
       sdrReadiness: {
-        score: 78,
-        strengths: ['Communication skills', 'Sales experience', 'Relationship building'],
+        score: sdrScore,
+        strengths: extractList(aiText, 'strengths') || ['Communication skills', 'Sales experience'],
+        gaps: extractList(aiText, 'gaps') || ['SDR-specific terminology', 'Tech industry knowledge']
+      },
+      nextSteps: extractList(aiText, 'next steps|action plan') || [
+        'Update headline with SDR pivot language',
+        'Rewrite about section with specific wins',
+        'Add SDR-relevant skills to profile'
+      ],
+      metrics: {
+        estimatedProfileViews: 50,
+        estimatedConnectionRequests: 15,
+        estimatedEngagementRate: 3.5
+      }
+    }
+  }
+
+  const createFallbackAnalysis = (profile) => {
+    // Enhanced fallback analysis based on profile data
+    const baseScore = 70
+    const experienceBonus = profile.experience_years === '3-5' ? 10 : 
+                           profile.experience_years === '5+' ? 15 : 0
+    const skillsBonus = profile.skills?.length > 5 ? 5 : 0
+    
+    return {
+      profileScore: Math.min(100, baseScore + experienceBonus + skillsBonus),
+      optimizationScore: 85,
+      recommendations: [
+        {
+          category: 'Headline',
+          current: `${profile.current_position || 'Professional'} at ${profile.company || 'Company'}`,
+          suggested: `SDR Pivot | ${profile.experience_years || 'Experienced'} | Results-driven`,
+          priority: 'high',
+          impact: 'High visibility to recruiters'
+        },
+        {
+          category: 'About Section',
+          current: 'Standard professional description',
+          suggested: `I'm pivoting into SDR because I love building relationships and driving results. ${profile.skills?.slice(0, 3).join(', ')}. Ready to learn and contribute to a high-performing SDR team.`,
+          priority: 'high',
+          impact: 'Shows SDR readiness and specific skills'
+        }
+      ],
+      sdrReadiness: {
+        score: 75,
+        strengths: profile.skills?.slice(0, 3) || ['Communication', 'Sales', 'Relationship building'],
         gaps: ['SDR-specific terminology', 'Tech industry knowledge', 'Outreach experience']
       },
       nextSteps: [
         'Update headline with SDR pivot language',
         'Rewrite about section with specific wins',
-        'Create and pin 60-second Loom video',
         'Add SDR-relevant skills to profile',
-        'Start posting SDR-focused content'
-      ]
+        'Create SDR-focused content',
+        'Network with SDR professionals'
+      ],
+      metrics: {
+        estimatedProfileViews: 45,
+        estimatedConnectionRequests: 12,
+        estimatedEngagementRate: 3.2
+      }
     }
+  }
+
+  const extractScore = (text, keyword) => {
+    const regex = new RegExp(`${keyword}[^0-9]*([0-9]{1,3})`, 'i')
+    const match = text.match(regex)
+    return match ? parseInt(match[1]) : null
+  }
+
+  const extractSuggestion = (text, category) => {
+    const regex = new RegExp(`${category}[^:]*:([^\\n]+)`, 'i')
+    const match = text.match(regex)
+    return match ? match[1].trim() : null
+  }
+
+  const extractList = (text, keyword) => {
+    const regex = new RegExp(`${keyword}[^\\n]*\\n([^\\n]+)`, 'i')
+    const match = text.match(regex)
+    if (match) {
+      return match[1].split(',').map(item => item.trim()).filter(item => item.length > 0)
+    }
+    return null
   }
 
   const saveLinkedInAnalysis = async (analysisData) => {
@@ -396,6 +471,51 @@ const LinkedInAnalysis = () => {
               ))}
             </div>
           </div>
+
+          {/* AI Content Suggestions */}
+          {analysis.contentSuggestions && (
+            <div className="content-suggestions-section">
+              <h3>AI-Generated Content Strategy</h3>
+              <div className="content-suggestions-grid">
+                <div className="content-card">
+                  <h4>📝 Post Topics</h4>
+                  <ul>
+                    {analysis.contentSuggestions.postTopics?.map((topic, index) => (
+                      <li key={index}>{topic}</li>
+                    )) || [
+                      'SDR career transition journey',
+                      'Sales skills that transfer to SDR',
+                      'Learning from SDR professionals',
+                      'Building relationships in sales'
+                    ].map((topic, index) => (
+                      <li key={index}>{topic}</li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="content-card">
+                  <h4>🎯 Networking Targets</h4>
+                  <ul>
+                    {analysis.contentSuggestions.networkingTargets?.map((target, index) => (
+                      <li key={index}>{target}</li>
+                    )) || [
+                      'SDR managers and directors',
+                      'Sales development professionals',
+                      'Tech company recruiters',
+                      'Sales trainers and coaches'
+                    ].map((target, index) => (
+                      <li key={index}>{target}</li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="content-card">
+                  <h4>💡 Engagement Strategy</h4>
+                  <p>{analysis.contentSuggestions.engagementStrategy || 'Focus on providing value through thoughtful comments and sharing insights about sales development. Engage with SDR content and contribute to discussions about sales best practices.'}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="action-buttons">

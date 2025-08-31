@@ -4,7 +4,6 @@ import LandingPage from './pages/LandingPage'
 import DashboardPage from './pages/DashboardPage'
 import OnboardingPage from './pages/OnboardingPage'
 
-
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
   
