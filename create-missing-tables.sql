@@ -35,3 +35,5 @@ CREATE TRIGGER update_ai_analysis_results_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+
+

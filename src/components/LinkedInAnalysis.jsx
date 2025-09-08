@@ -127,14 +127,36 @@ const LinkedInAnalysis = () => {
         gaps: extractList(aiText, 'gaps') || ['SDR-specific terminology', 'Tech industry knowledge']
       },
       nextSteps: extractList(aiText, 'next steps|action plan') || [
-        'Update headline with SDR pivot language',
-        'Rewrite about section with specific wins',
-        'Add SDR-relevant skills to profile'
+        {
+          title: 'Update headline with SDR pivot language',
+          description: 'Your headline is the first thing recruiters see. Make it SDR-focused and results-driven.',
+          action: 'Replace your current headline with something like: "SDR Pivot | Results-driven | Relationship Builder | Ready to Drive Revenue Growth"',
+          impact: 'High visibility to recruiters and hiring managers',
+          timeToComplete: '5 minutes',
+          priority: 'high'
+        },
+        {
+          title: 'Rewrite about section with specific wins',
+          description: 'Your about section should tell a compelling story of why you\'re transitioning to SDR and what value you bring.',
+          action: 'Write 2-3 paragraphs highlighting: 1) Your transition story, 2) Specific achievements with numbers, 3) Why you\'re passionate about sales development',
+          impact: 'Shows SDR readiness and specific wins',
+          timeToComplete: '15-20 minutes',
+          priority: 'high'
+        },
+        {
+          title: 'Add SDR-relevant skills to profile',
+          description: 'Include skills that SDR recruiters are looking for to improve your searchability.',
+          action: 'Add skills like: Cold Calling, Lead Generation, CRM (Salesforce/HubSpot), Sales Prospecting, Email Outreach, LinkedIn Sales Navigator',
+          impact: 'Increases profile visibility in recruiter searches',
+          timeToComplete: '10 minutes',
+          priority: 'medium'
+        }
       ],
       metrics: {
-        estimatedProfileViews: 50,
-        estimatedConnectionRequests: 15,
-        estimatedEngagementRate: 3.5
+        profileViews: 50,
+        connectionRequests: 15,
+        engagementRate: 3.5,
+        recruiterViews: 8
       }
     }
   }
@@ -171,16 +193,52 @@ const LinkedInAnalysis = () => {
         gaps: ['SDR-specific terminology', 'Tech industry knowledge', 'Outreach experience']
       },
       nextSteps: [
-        'Update headline with SDR pivot language',
-        'Rewrite about section with specific wins',
-        'Add SDR-relevant skills to profile',
-        'Create SDR-focused content',
-        'Network with SDR professionals'
+        {
+          title: 'Update headline with SDR pivot language',
+          description: 'Your headline is the first thing recruiters see. Make it SDR-focused and results-driven.',
+          action: `Replace your current headline with something like: "SDR Pivot | ${profile.experience_years || 'Experienced'} | Results-driven | Ready to Drive Revenue Growth"`,
+          impact: 'High visibility to recruiters and hiring managers',
+          timeToComplete: '5 minutes',
+          priority: 'high'
+        },
+        {
+          title: 'Rewrite about section with specific wins',
+          description: 'Your about section should tell a compelling story of why you\'re transitioning to SDR and what value you bring.',
+          action: 'Write 2-3 paragraphs highlighting: 1) Your transition story, 2) Specific achievements with numbers, 3) Why you\'re passionate about sales development',
+          impact: 'Shows SDR readiness and specific wins',
+          timeToComplete: '15-20 minutes',
+          priority: 'high'
+        },
+        {
+          title: 'Add SDR-relevant skills to profile',
+          description: 'Include skills that SDR recruiters are looking for to improve your searchability.',
+          action: 'Add skills like: Cold Calling, Lead Generation, CRM (Salesforce/HubSpot), Sales Prospecting, Email Outreach, LinkedIn Sales Navigator',
+          impact: 'Increases profile visibility in recruiter searches',
+          timeToComplete: '10 minutes',
+          priority: 'medium'
+        },
+        {
+          title: 'Create SDR-focused content',
+          description: 'Share content that demonstrates your knowledge and passion for sales development.',
+          action: 'Post about: SDR best practices, sales trends, your learning journey, or insights from sales podcasts/books you\'re consuming',
+          impact: 'Builds credibility and attracts SDR professionals',
+          timeToComplete: '20-30 minutes',
+          priority: 'medium'
+        },
+        {
+          title: 'Network with SDR professionals',
+          description: 'Connect with current SDRs, managers, and sales leaders to learn and get referrals.',
+          action: 'Send personalized connection requests to SDRs at target companies. Include a message about your career transition and ask for advice.',
+          impact: 'Opens doors to opportunities and insider knowledge',
+          timeToComplete: '30 minutes',
+          priority: 'high'
+        }
       ],
       metrics: {
-        estimatedProfileViews: 45,
-        estimatedConnectionRequests: 12,
-        estimatedEngagementRate: 3.2
+        profileViews: 45,
+        connectionRequests: 12,
+        engagementRate: 3.2,
+        recruiterViews: 6
       }
     }
   }
@@ -465,8 +523,39 @@ const LinkedInAnalysis = () => {
             <div className="steps-list">
               {analysis.nextSteps.map((step, index) => (
                 <div key={index} className="step-item">
-                  <div className="step-number">{index + 1}</div>
-                  <div className="step-text">{step}</div>
+                  <div className="step-header">
+                    <div className="step-number">{index + 1}</div>
+                    <div className="step-title-section">
+                      <h4 className="step-title">{typeof step === 'string' ? step : step.title}</h4>
+                      <div className="step-meta">
+                        <span className={`priority-badge priority-${typeof step === 'object' ? step.priority : 'medium'}`}>
+                          {typeof step === 'object' ? step.priority : 'medium'} priority
+                        </span>
+                        <span className="time-estimate">
+                          {typeof step === 'object' ? step.timeToComplete : '10-15 minutes'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {typeof step === 'object' && (
+                    <div className="step-details">
+                      <div className="step-description">
+                        <strong>Why this matters:</strong>
+                        <p>{step.description}</p>
+                      </div>
+                      
+                      <div className="step-action">
+                        <strong>What to do:</strong>
+                        <p>{step.action}</p>
+                      </div>
+                      
+                      <div className="step-impact">
+                        <strong>Expected impact:</strong>
+                        <p>{step.impact}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

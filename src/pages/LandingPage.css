@@ -8,6 +8,73 @@
   color: #000000;
 }
 
+/* Becky Coaching Button - High Specificity Override */
+.landing-page .becky-coaching-button-unique {
+  width: 100% !important;
+  background: #2563eb !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  min-height: 80px !important;
+  box-sizing: border-box !important;
+  color: white !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.landing-page .becky-coaching-button-unique:hover {
+  background: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+}
+
+.landing-page .becky-coaching-button-unique * {
+  color: white !important;
+}
+
+.landing-page .becky-coaching-button-unique .becky-name {
+  color: #ec4899 !important;
+}
+
+/* Force Becky Button Styling - Maximum Specificity */
+.landing-page div[onclick] {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 20px !important;
+  padding: 2.5rem 6rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 3rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  min-height: 140px !important;
+  box-sizing: border-box !important;
+  font-size: 1.8rem !important;
+  font-weight: 800 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  box-shadow: 0 15px 40px rgba(37, 99, 235, 0.4) !important;
+  text-decoration: none !important;
+  outline: none !important;
+  max-width: 1200px !important;
+  margin: 2rem auto !important;
+}
+
+.landing-page div[onclick] * {
+  color: white !important;
+}
+
+.landing-page div[onclick] .becky-name {
+  color: #ec4899 !important;
+}
+
 /* Navigation */
 .navbar {
   position: sticky;
@@ -2035,7 +2102,9 @@
 }
 
 .preview-content {
-  space-y: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .preview-mission {
@@ -2341,10 +2410,13 @@
   
   .mobile-menu-toggle {
     display: block;
+    min-height: 44px;
+    min-width: 44px;
   }
   
   .mobile-menu {
     display: block;
+    z-index: 1000;
   }
   
   .logo-icon {
@@ -2515,6 +2587,15 @@
   
   .nav-container {
     padding: 1rem 0.75rem;
+  }
+  
+  /* Ensure all buttons have proper touch targets */
+  .cta-button,
+  .login-btn,
+  .signup-btn,
+  .mobile-nav-link {
+    min-height: 44px;
+    min-width: 44px;
   }
   
   .hero-section {

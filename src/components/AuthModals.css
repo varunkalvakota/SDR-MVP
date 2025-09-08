@@ -211,6 +211,8 @@
 @media (max-width: 480px) {
   .modal-overlay {
     padding: 0.5rem;
+    align-items: flex-start;
+    padding-top: 2rem;
   }
   
   .modal-content {
@@ -219,6 +221,8 @@
     max-width: none;
     width: 100%;
     border-radius: 8px;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
   }
   
   .modal-header h2 {
@@ -241,6 +245,7 @@
   .modal-submit-btn {
     padding: 1rem 1.5rem;
     font-size: 1rem;
+    min-height: 44px; /* Better touch target */
   }
   
   .modal-footer {

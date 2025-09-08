@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase'
 import AIResumeAnalysis from '../components/AIResumeAnalysis'
 import AdvancedFeatures from '../components/AdvancedFeatures'
 import LinkedInAnalysis from '../components/LinkedInAnalysis'
+import TrainingCamp from '../components/TrainingCamp'
+import DailyMissions from '../components/DailyMissions'
 
 import { 
   FiUser, 
@@ -28,7 +30,7 @@ import {
   FiZap,
   FiLinkedin,
   FiStar,
-  FiLock,
+  FiLock
 
 } from 'react-icons/fi'
 import './DashboardPage.css'
@@ -974,6 +976,20 @@ Generated on: ${new Date().toLocaleDateString()}
               <FiLinkedin />
               LinkedIn Analysis
             </button>
+            <button
+              className={`nav-item ${activeTab === 'training-camp' ? 'active' : ''}`}
+              onClick={() => setActiveTab('training-camp')}
+            >
+              <FiBook />
+              Training Camp
+            </button>
+            <button
+              className={`nav-item ${activeTab === 'daily-missions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('daily-missions')}
+            >
+              <FiTarget />
+              Daily Missions
+            </button>
           </nav>
         </div>
 
@@ -1324,6 +1340,18 @@ Generated on: ${new Date().toLocaleDateString()}
         {activeTab === 'linkedin-analysis' && (
           <div className="linkedin-analysis-tab">
             <LinkedInAnalysis />
+          </div>
+        )}
+
+        {activeTab === 'training-camp' && (
+          <div className="training-camp-tab">
+            <TrainingCamp />
+          </div>
+        )}
+
+        {activeTab === 'daily-missions' && (
+          <div className="daily-missions-tab">
+            <DailyMissions />
           </div>
         )}
         

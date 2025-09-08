@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { LoginModal, SignupModal, ResetPasswordModal } from '../components/AuthModals'
+import BeckyButton from '../components/BeckyButton'
 import { 
   FiFileText, 
   FiCpu, 
@@ -237,6 +238,11 @@ const LandingPage = () => {
                   <FiPlay className="play-icon" />
                   Watch Demo
                 </button>
+              </div>
+              
+              {/* Becky Coaching Plan Button */}
+              <div style={{ marginTop: '2rem' }}>
+                <BeckyButton />
               </div>
               
               <div className="hero-stats">

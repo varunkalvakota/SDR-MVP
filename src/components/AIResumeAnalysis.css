@@ -433,4 +433,19 @@
     width: 100%;
     justify-content: flex-end;
   }
+  
+  /* Ensure buttons have proper touch targets */
+  .analyze-btn,
+  .action-btn,
+  .view-full-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve mobile form inputs */
+  .ai-resume-analysis input,
+  .ai-resume-analysis textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+  }
 }

@@ -811,9 +811,11 @@ Keep it encouraging and actionable - I want to empower them to take their career
            - Specific skills to develop
         
         6. Action Plan:
-           - 5 specific next steps to implement
-           - Priority order for changes
+           - 5 specific next steps to implement with detailed instructions
+           - Priority order for changes (high/medium/low)
            - Expected impact of each change
+           - Time estimates for completion
+           - Step-by-step guidance for each action
         
         7. Content Suggestions:
            - Sample posts for SDR networking
@@ -838,16 +840,26 @@ Keep it encouraging and actionable - I want to empower them to take their career
             "strengths": ["string"],
             "gaps": ["string"]
           },
-          "nextSteps": ["string"],
+          "nextSteps": [
+            {
+              "title": "string",
+              "description": "string", 
+              "action": "string",
+              "impact": "string",
+              "timeToComplete": "string",
+              "priority": "high|medium|low"
+            }
+          ],
           "contentSuggestions": {
             "postTopics": ["string"],
             "networkingTargets": ["string"],
             "engagementStrategy": "string"
           },
           "metrics": {
-            "estimatedProfileViews": number,
-            "estimatedConnectionRequests": number,
-            "estimatedEngagementRate": number
+            "profileViews": number,
+            "connectionRequests": number,
+            "engagementRate": number,
+            "recruiterViews": number
           }
         }
         
