@@ -102,6 +102,9 @@ const LinkedInAnalysis = () => {
     const optimizationScore = extractScore(aiText, 'optimization') || 80
     const sdrScore = extractScore(aiText, 'SDR|readiness') || 70
 
+    // Generate dynamic metrics based on profile data
+    const dynamicMetrics = generateDynamicMetrics(profile, profileScore)
+
     return {
       profileScore,
       optimizationScore,
@@ -152,12 +155,7 @@ const LinkedInAnalysis = () => {
           priority: 'medium'
         }
       ],
-      metrics: {
-        profileViews: 50,
-        connectionRequests: 15,
-        engagementRate: 3.5,
-        recruiterViews: 8
-      }
+      metrics: dynamicMetrics
     }
   }
 
@@ -167,9 +165,13 @@ const LinkedInAnalysis = () => {
     const experienceBonus = profile.experience_years === '3-5' ? 10 : 
                            profile.experience_years === '5+' ? 15 : 0
     const skillsBonus = profile.skills?.length > 5 ? 5 : 0
+    const profileScore = Math.min(100, baseScore + experienceBonus + skillsBonus)
+    
+    // Generate dynamic metrics based on profile data
+    const dynamicMetrics = generateDynamicMetrics(profile, profileScore)
     
     return {
-      profileScore: Math.min(100, baseScore + experienceBonus + skillsBonus),
+      profileScore,
       optimizationScore: 85,
       recommendations: [
         {
@@ -234,12 +236,61 @@ const LinkedInAnalysis = () => {
           priority: 'high'
         }
       ],
-      metrics: {
-        profileViews: 45,
-        connectionRequests: 12,
-        engagementRate: 3.2,
-        recruiterViews: 6
-      }
+      metrics: dynamicMetrics
+    }
+  }
+
+  const generateDynamicMetrics = (profile, profileScore) => {
+    // Base metrics that scale with profile quality
+    const baseProfileViews = 30
+    const baseConnectionRequests = 8
+    const baseEngagementRate = 2.5
+    const baseRecruiterViews = 4
+    
+    // Calculate multipliers based on profile data
+    const experienceMultiplier = profile.experience_years === '3-5' ? 1.3 : 
+                                profile.experience_years === '5+' ? 1.6 : 1.0
+    
+    const skillsMultiplier = profile.skills?.length > 8 ? 1.4 : 
+                            profile.skills?.length > 5 ? 1.2 : 1.0
+    
+    const linkedinUrlMultiplier = profile.linkedin_url ? 1.2 : 0.8
+    
+    const scoreMultiplier = profileScore / 100
+    
+    // Industry-specific adjustments
+    const industryMultiplier = profile.target_industry === 'Technology' ? 1.3 :
+                              profile.target_industry === 'SaaS' ? 1.4 :
+                              profile.target_industry === 'Fintech' ? 1.2 : 1.0
+    
+    // Calculate final metrics with some randomness for realism
+    const randomVariation = () => 0.8 + Math.random() * 0.4 // 80% to 120% variation
+    
+    const profileViews = Math.round(
+      baseProfileViews * experienceMultiplier * skillsMultiplier * 
+      linkedinUrlMultiplier * scoreMultiplier * industryMultiplier * randomVariation()
+    )
+    
+    const connectionRequests = Math.round(
+      baseConnectionRequests * experienceMultiplier * skillsMultiplier * 
+      scoreMultiplier * industryMultiplier * randomVariation()
+    )
+    
+    const engagementRate = Math.round(
+      (baseEngagementRate * experienceMultiplier * skillsMultiplier * 
+       scoreMultiplier * industryMultiplier * randomVariation()) * 10
+    ) / 10 // Round to 1 decimal place
+    
+    const recruiterViews = Math.round(
+      baseRecruiterViews * experienceMultiplier * skillsMultiplier * 
+      scoreMultiplier * industryMultiplier * randomVariation()
+    )
+    
+    return {
+      profileViews: Math.max(5, profileViews), // Minimum of 5
+      connectionRequests: Math.max(2, connectionRequests), // Minimum of 2
+      engagementRate: Math.max(1.0, Math.min(8.0, engagementRate)), // Between 1.0% and 8.0%
+      recruiterViews: Math.max(1, recruiterViews) // Minimum of 1
     }
   }
 

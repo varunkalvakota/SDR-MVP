@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import './AuthModals.css'
 
@@ -112,15 +112,24 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup, onSwitchToReset, onLogi
   )
 }
 
-const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
+const SignupModal = ({ isOpen, onClose, onSwitchToLogin, prefillData }) => {
+  const [firstName, setFirstName] = useState(prefillData?.firstName || '')
+  const [lastName, setLastName] = useState(prefillData?.lastName || '')
+  const [email, setEmail] = useState(prefillData?.email || '')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const { signUp } = useAuth()
+
+  // Update form fields when prefillData changes
+  useEffect(() => {
+    if (prefillData) {
+      setFirstName(prefillData.firstName || '')
+      setLastName(prefillData.lastName || '')
+      setEmail(prefillData.email || '')
+    }
+  }, [prefillData])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

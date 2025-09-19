@@ -1,3 +1,5 @@
+import BeckyLogo from './BeckyLogo'
+
 const BeckyButton = () => {
   const handleBeckyClick = () => {
     console.log('Becky coaching plan clicked!');
@@ -42,105 +44,11 @@ const BeckyButton = () => {
         e.target.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
       }}
     >
-      {/* Becky Avatar */}
+      {/* Becky Logo */}
       <div style={{
-        position: 'relative',
-        width: '120px',
-        height: '120px',
         flexShrink: 0
       }}>
-        {/* Face */}
-        <div style={{
-          width: '110px',
-          height: '110px',
-          background: '#f5d5ae',
-          borderRadius: '50%',
-          position: 'relative',
-          zIndex: 3,
-          border: '4px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
-        }}>
-          {/* Eyes */}
-          <div style={{
-            position: 'absolute',
-            top: '35px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            gap: '18px'
-          }}>
-            <div style={{
-              width: '10px',
-              height: '10px',
-              background: '#1f2937',
-              borderRadius: '50%'
-            }}></div>
-            <div style={{
-              width: '10px',
-              height: '10px',
-              background: '#1f2937',
-              borderRadius: '50%'
-            }}></div>
-          </div>
-          {/* Eyebrows */}
-          <div style={{
-            position: 'absolute',
-            top: '28px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            gap: '18px'
-          }}>
-            <div style={{
-              width: '12px',
-              height: '5px',
-              background: '#92400e',
-              borderRadius: '3px'
-            }}></div>
-            <div style={{
-              width: '12px',
-              height: '5px',
-              background: '#92400e',
-              borderRadius: '3px'
-            }}></div>
-          </div>
-          {/* Mouth */}
-          <div style={{
-            position: 'absolute',
-            bottom: '30px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '18px',
-            height: '8px',
-            background: '#92400e',
-            borderRadius: '0 0 10px 10px'
-          }}></div>
-        </div>
-        {/* Hair */}
-        <div style={{
-          position: 'absolute',
-          top: '12px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '90px',
-          height: '55px',
-          background: '#92400e',
-          borderRadius: '50% 50% 0 0',
-          zIndex: 2
-        }}></div>
-        {/* Headband */}
-        <div style={{
-          position: 'absolute',
-          top: '18px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '95px',
-          height: '15px',
-          background: '#ec4899',
-          borderRadius: '8px',
-          zIndex: 4,
-          boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)'
-        }}></div>
+        <BeckyLogo size="xlarge" animated={true} />
       </div>
       
       {/* Text Content */}
@@ -162,19 +70,6 @@ const BeckyButton = () => {
         </div>
       </div>
       
-      {/* Becky Name */}
-      <div style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '20px',
-        color: '#ec4899',
-        fontSize: '1.4rem',
-        fontWeight: '900',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-      }}>
-        Becky
-      </div>
     </div>
   )
 }

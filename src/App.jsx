@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext'
 import LandingPage from './pages/LandingPage'
 import DashboardPage from './pages/DashboardPage'
 import OnboardingPage from './pages/OnboardingPage'
+import LinkedInAnalysisResults from './pages/LinkedInAnalysisResults'
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -29,6 +30,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/linkedin-analysis-results" element={<LinkedInAnalysisResults />} />
       <Route 
         path="/onboarding" 
         element={
