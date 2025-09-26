@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import SDRLogo from './SDRLogo'
 import './AuthModals.css'
 
 const LoginModal = ({ isOpen, onClose, onSwitchToSignup, onSwitchToReset, onLoginSuccess }) => {
@@ -49,6 +50,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup, onSwitchToReset, onLogi
         <button className="modal-close" onClick={handleClose}>×</button>
         
         <div className="modal-header">
+          <SDRLogo size="small" showText={true} />
           <h2>Log In</h2>
         </div>
 
@@ -183,6 +185,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin, prefillData }) => {
           <button className="modal-close" onClick={handleClose}>×</button>
           
           <div className="modal-header">
+            <SDRLogo size="small" showText={true} />
             <h2>Check your email!</h2>
             <p>We've sent you a confirmation link to complete your registration.</p>
           </div>
@@ -204,6 +207,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin, prefillData }) => {
         <button className="modal-close" onClick={handleClose}>×</button>
         
         <div className="modal-header">
+          <SDRLogo size="small" showText={true} />
           <h2>Sign Up</h2>
         </div>
 
@@ -328,6 +332,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           <button className="modal-close" onClick={handleClose}>×</button>
           
           <div className="modal-header">
+            <SDRLogo size="small" showText={true} />
             <h2>Check your email!</h2>
             <p>We've sent you a password reset link. Click the link in your email to reset your password.</p>
           </div>
@@ -349,6 +354,7 @@ const ResetPasswordModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         <button className="modal-close" onClick={handleClose}>×</button>
         
         <div className="modal-header">
+          <SDRLogo size="small" showText={true} />
           <h2>Reset Password</h2>
           <p>Enter your email address and we'll send you a link to reset your password.</p>
         </div>

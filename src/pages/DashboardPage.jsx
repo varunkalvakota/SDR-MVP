@@ -33,6 +33,7 @@ import {
   FiLock
 
 } from 'react-icons/fi'
+import SDRLogo from '../components/SDRLogo'
 import './DashboardPage.css'
 
 const DashboardPage = () => {
@@ -909,8 +910,7 @@ Generated on: ${new Date().toLocaleDateString()}
       <div className="dashboard-header">
         <div className="header-left">
           <div className="logo-section">
-            <span className="logo-icon">S</span>
-            <span className="logo-text">SDR Roadmap</span>
+            <SDRLogo size="small" showText={true} />
           </div>
         </div>
         <div className="header-right">

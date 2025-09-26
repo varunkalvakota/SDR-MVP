@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { emailService } from '../lib/emailService'
 import { LoginModal, SignupModal, ResetPasswordModal } from '../components/AuthModals'
-import BeckyButton from '../components/BeckyButton'
 import BeckyLogo from '../components/BeckyLogo'
 import { 
   FiFileText, 
@@ -23,7 +22,6 @@ import {
   FiMenu,
   FiX,
   FiStar,
-  FiPlay,
   FiCalendar,
   FiAward,
   FiBarChart,
@@ -38,7 +36,6 @@ import {
   FiDollarSign,
   FiClock,
   FiBookOpen,
-  FiLinkedin
 } from 'react-icons/fi'
 import './LandingPage.css'
 
@@ -51,16 +48,6 @@ const LandingPage = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [shouldCheckOnboarding, setShouldCheckOnboarding] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [linkedinFormData, setLinkedinFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    linkedinUrl: '',
-    targetRole: '',
-    experience: ''
-  })
-  const [isLinkedinFormSubmitting, setIsLinkedinFormSubmitting] = useState(false)
-  const [linkedinFormMessage, setLinkedinFormMessage] = useState('')
 
   // Handle navigation from LinkedIn analysis results page
   useEffect(() => {
@@ -168,121 +155,6 @@ const LandingPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleLinkedInAnalysisSubmit = async (e) => {
-    e.preventDefault()
-    setIsLinkedinFormSubmitting(true)
-    setLinkedinFormMessage('')
-
-    try {
-      // Generate LinkedIn analysis
-      const analysisResults = generateMockLinkedInAnalysis(linkedinFormData)
-      
-      // Save lead data to database
-      const { error } = await supabase
-        .from('linkedin_leads')
-        .insert({
-          first_name: linkedinFormData.firstName,
-          last_name: linkedinFormData.lastName,
-          email: linkedinFormData.email,
-          linkedin_url: linkedinFormData.linkedinUrl,
-          target_role: linkedinFormData.targetRole,
-          experience_level: linkedinFormData.experience,
-          created_at: new Date().toISOString(),
-          status: 'analysis_completed',
-          analysis_completed_at: new Date().toISOString(),
-          analysis_results: JSON.stringify(analysisResults)
-        })
-
-      if (error) throw error
-
-      // Store analysis results in session storage for the results page
-      sessionStorage.setItem('linkedinAnalysisResults', JSON.stringify({
-        leadData: linkedinFormData,
-        analysisResults: analysisResults,
-        leadId: 'temp-id' // We don't have the actual ID since we're not selecting
-      }))
-
-      // Redirect to results page
-      navigate('/linkedin-analysis-results')
-
-    } catch (error) {
-      console.error('Error saving LinkedIn lead:', error)
-      console.error('Error details:', error.message)
-      console.error('Form data:', linkedinFormData)
-      setLinkedinFormMessage(`Error: ${error.message}. Please check the console for details.`)
-    } finally {
-      setIsLinkedinFormSubmitting(false)
-    }
-  }
-
-  // Generate mock LinkedIn analysis (replace with real AI analysis)
-  const generateMockLinkedInAnalysis = (leadData) => {
-    // This is a simplified version - in reality you'd use AI to analyze their LinkedIn profile
-    const baseScore = 70
-    const experienceBonus = leadData.experience === '4-5' ? 15 : 
-                           leadData.experience === '6+' ? 20 : 
-                           leadData.experience === '2-3' ? 10 : 5
-    
-    const profileScore = Math.min(100, baseScore + experienceBonus)
-    
-    return {
-      profileScore,
-      optimizationScore: profileScore + 5,
-      recommendations: [
-        {
-          category: 'Headline',
-          current: 'Current headline from profile',
-          suggested: `${leadData.targetRole} | ${leadData.experience} years experience | Results-driven professional`,
-          priority: 'high',
-          impact: 'High visibility to recruiters'
-        },
-        {
-          category: 'About Section',
-          current: 'Standard professional description',
-          suggested: `I'm a ${leadData.experience} year professional transitioning to ${leadData.targetRole} roles. I bring strong communication skills and a results-driven approach to sales development.`,
-          priority: 'high',
-          impact: 'Shows SDR readiness and specific skills'
-        }
-      ],
-      sdrReadiness: {
-        score: profileScore - 10,
-        strengths: ['Communication skills', 'Professional experience', 'Goal-oriented'],
-        gaps: ['SDR-specific terminology', 'Sales process knowledge', 'CRM experience']
-      },
-      nextSteps: [
-        {
-          title: 'Update headline with SDR focus',
-          description: 'Make your headline SDR-specific to attract recruiters',
-          action: 'Replace current headline with SDR-focused language',
-          impact: 'Increases recruiter visibility',
-          timeToComplete: '5 minutes',
-          priority: 'high'
-        },
-        {
-          title: 'Add SDR-relevant skills',
-          description: 'Include skills that SDR recruiters are looking for',
-          action: 'Add skills like: Cold Calling, Lead Generation, CRM, Sales Prospecting',
-          impact: 'Improves searchability',
-          timeToComplete: '10 minutes',
-          priority: 'medium'
-        }
-      ],
-      metrics: {
-        profileViews: Math.round(30 + (profileScore * 0.5) + Math.random() * 20),
-        connectionRequests: Math.round(8 + (profileScore * 0.2) + Math.random() * 10),
-        engagementRate: Math.round((2 + (profileScore * 0.03) + Math.random() * 2) * 10) / 10,
-        recruiterViews: Math.round(4 + (profileScore * 0.1) + Math.random() * 5)
-      }
-    }
-  }
-
-  const handleLinkedinFormChange = (e) => {
-    const { name, value } = e.target
-    setLinkedinFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
 
   return (
     <div className="landing-page">
@@ -296,7 +168,7 @@ const LandingPage = () => {
           
           <div className="nav-links">
             <button onClick={() => scrollToSection('courses')} className="nav-link">Courses</button>
-            <button onClick={() => scrollToSection('linkedin-analysis')} className="nav-link">LinkedIn Analysis</button>
+            <Link to="/linkedin-analysis" className="nav-link">LinkedIn Analysis</Link>
             <a href="#pricing" className="nav-link">Pricing</a>
             <button onClick={() => scrollToSection('how-it-works')} className="nav-link">About</button>
             <a href="#contact" className="nav-link">Contact</a>
@@ -327,7 +199,7 @@ const LandingPage = () => {
         <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="mobile-menu-links">
             <button onClick={() => { scrollToSection('courses'); closeMobileMenu(); }} className="mobile-nav-link">Courses</button>
-            <button onClick={() => { scrollToSection('linkedin-analysis'); closeMobileMenu(); }} className="mobile-nav-link">LinkedIn Analysis</button>
+            <Link to="/linkedin-analysis" onClick={closeMobileMenu} className="mobile-nav-link">LinkedIn Analysis</Link>
             <a href="#pricing" onClick={closeMobileMenu} className="mobile-nav-link">Pricing</a>
             <button onClick={() => { scrollToSection('how-it-works'); closeMobileMenu(); }} className="mobile-nav-link">About</button>
             <a href="#contact" onClick={closeMobileMenu} className="mobile-nav-link">Contact</a>
@@ -375,30 +247,6 @@ const LandingPage = () => {
                 <button onClick={startOnboarding} className="hero-cta primary">
                   Start My Free Career Plan
                 </button>
-                <button className="hero-cta secondary">
-                  <FiPlay className="play-icon" />
-                  Watch Demo
-                </button>
-              </div>
-              
-              {/* Becky Coaching Plan Button */}
-              <div style={{ marginTop: '2rem' }}>
-                <BeckyButton />
-              </div>
-              
-              <div className="hero-stats">
-                <div className="stat-item">
-                  <span className="stat-number">87%</span>
-                  <span className="stat-label">Success Rate</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">3.2x</span>
-                  <span className="stat-label">Faster Promotion</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">92%</span>
-                  <span className="stat-label">Would Recommend</span>
-                </div>
               </div>
             </div>
             
@@ -598,178 +446,6 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* LinkedIn Analysis Lead Capture Section */}
-        <section id="linkedin-analysis" className="linkedin-analysis-section">
-          <div className="linkedin-analysis-container">
-            <div className="section-header">
-              <h2 className="section-title">Get Your Free LinkedIn Analysis</h2>
-              <p className="section-subtitle">Discover how to optimize your LinkedIn profile for SDR roles in just 2 minutes</p>
-            </div>
-            
-            <div className="linkedin-analysis-content">
-              <div className="analysis-preview">
-                <div className="preview-card">
-                  <div className="preview-header">
-                    <FiLinkedin className="preview-icon" />
-                    <h3>LinkedIn Profile Analysis</h3>
-                  </div>
-                  <div className="preview-metrics">
-                    <div className="preview-metric">
-                      <span className="metric-value">87</span>
-                      <span className="metric-label">Profile Views</span>
-                    </div>
-                    <div className="preview-metric">
-                      <span className="metric-value">23</span>
-                      <span className="metric-label">Connection Requests</span>
-                    </div>
-                    <div className="preview-metric">
-                      <span className="metric-value">4.2%</span>
-                      <span className="metric-label">Engagement Rate</span>
-                    </div>
-                    <div className="preview-metric">
-                      <span className="metric-value">12</span>
-                      <span className="metric-label">Recruiter Views</span>
-                    </div>
-                  </div>
-                  <div className="preview-features">
-                    <div className="feature-item">
-                      <FiCheckCircle />
-                      <span>Profile optimization score</span>
-                    </div>
-                    <div className="feature-item">
-                      <FiCheckCircle />
-                      <span>SDR readiness assessment</span>
-                    </div>
-                    <div className="feature-item">
-                      <FiCheckCircle />
-                      <span>Personalized recommendations</span>
-                    </div>
-                    <div className="feature-item">
-                      <FiCheckCircle />
-                      <span>Industry-specific insights</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="analysis-form">
-                <div className="form-header">
-                  <h3>Get Your Free Analysis</h3>
-                  <p>Enter your details below and we'll send you a personalized LinkedIn optimization report</p>
-                </div>
-                
-                <form className="linkedin-form" onSubmit={handleLinkedInAnalysisSubmit}>
-                  {linkedinFormMessage && (
-                    <div className={`form-message ${linkedinFormMessage.includes('Thank you') ? 'success' : 'error'}`}>
-                      {linkedinFormMessage}
-                    </div>
-                  )}
-                  
-                  <div className="form-group">
-                    <label htmlFor="firstName">First Name</label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      value={linkedinFormData.firstName}
-                      onChange={handleLinkedinFormChange}
-                      required
-                      placeholder="Enter your first name"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="lastName">Last Name</label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      value={linkedinFormData.lastName}
-                      onChange={handleLinkedinFormChange}
-                      required
-                      placeholder="Enter your last name"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="email">Email Address</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={linkedinFormData.email}
-                      onChange={handleLinkedinFormChange}
-                      required
-                      placeholder="Enter your email address"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="linkedinUrl">LinkedIn Profile URL</label>
-                    <input
-                      type="url"
-                      id="linkedinUrl"
-                      name="linkedinUrl"
-                      value={linkedinFormData.linkedinUrl}
-                      onChange={handleLinkedinFormChange}
-                      required
-                      placeholder="https://linkedin.com/in/yourprofile"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="targetRole">Target Role</label>
-                    <select 
-                      id="targetRole" 
-                      name="targetRole" 
-                      value={linkedinFormData.targetRole}
-                      onChange={handleLinkedinFormChange}
-                      required
-                    >
-                      <option value="">Select your target role</option>
-                      <option value="SDR">Sales Development Representative (SDR)</option>
-                      <option value="BDR">Business Development Representative (BDR)</option>
-                      <option value="AE">Account Executive (AE)</option>
-                      <option value="Sales Manager">Sales Manager</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="experience">Years of Experience</label>
-                    <select 
-                      id="experience" 
-                      name="experience" 
-                      value={linkedinFormData.experience}
-                      onChange={handleLinkedinFormChange}
-                      required
-                    >
-                      <option value="">Select your experience level</option>
-                      <option value="0-1">0-1 years</option>
-                      <option value="2-3">2-3 years</option>
-                      <option value="4-5">4-5 years</option>
-                      <option value="6+">6+ years</option>
-                    </select>
-                  </div>
-                  
-                  <button 
-                    type="submit" 
-                    className="analysis-submit-btn"
-                    disabled={isLinkedinFormSubmitting}
-                  >
-                    <FiCpu className="btn-icon" />
-                    {isLinkedinFormSubmitting ? 'Analyzing...' : 'Get My Free LinkedIn Analysis'}
-                  </button>
-                  
-                  <p className="form-disclaimer">
-                    <FiShield className="disclaimer-icon" />
-                    We'll analyze your profile and send you a detailed report within 24 hours. No spam, ever.
-                  </p>
-                </form>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Enhanced Testimonials Section */}
         <section className="testimonials-section">

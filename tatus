@@ -1,5 +1,0 @@
-[33m1ed587d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add LinkedIn Analysis feature with mock data and revert Becky AI integration
-[33m7bfbb41[m SECURITY: Remove exposed API key and update .gitignore to prevent future exposure
-[33m778fa43[m Add Becky AI assistant, enhanced PDF processing, saved analyses system, and production improvements
-[33mfdc4b0b[m Fix skills checkbox text alignment and improve form styling
-[33m6ce6a13[m Implement automatic onboarding redirect and pre-fill form with user metadata

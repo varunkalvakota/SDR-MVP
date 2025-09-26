@@ -20,6 +20,7 @@ import {
   FiLoader,
   FiArrowLeft as FiBack
 } from 'react-icons/fi'
+import SDRLogo from '../components/SDRLogo'
 import './OnboardingPage.css'
 
 const OnboardingPage = () => {
@@ -625,8 +626,7 @@ const OnboardingPage = () => {
           </div>
           <div className="header-center">
             <div className="logo-section">
-              <span className="logo-icon">S</span>
-              <span className="logo-text">SDR Roadmap</span>
+              <SDRLogo size="small" showText={true} />
             </div>
           </div>
           <div className="header-right">
