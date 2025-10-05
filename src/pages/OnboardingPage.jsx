@@ -238,10 +238,8 @@ const OnboardingPage = () => {
            onboarding_completed: true
          }
       
-      console.log('Saving profile data:', profileData)
       
       // Skip the check and go straight to upsert since RLS is causing 406 errors
-      console.log('Skipping profile check due to RLS issues, going straight to upsert')
       
       // Use upsert with email as conflict key since that's where the duplicate is happening
       const result = await supabase
@@ -250,7 +248,6 @@ const OnboardingPage = () => {
       
       const { data, error } = result
       
-      console.log('Supabase result:', { data, error })
       
       if (error) {
         console.error('Supabase error:', error)
@@ -291,11 +288,6 @@ const OnboardingPage = () => {
       return
     }
     
-    console.log('User data:', {
-      id: user.id,
-      email: user.email,
-      user_metadata: user.user_metadata
-    })
     
     // Add form validation
     if (!formData.firstName || !formData.lastName || !formData.email) {
@@ -303,7 +295,6 @@ const OnboardingPage = () => {
       return
     }
     
-    console.log('Form data before save:', formData)
     
     const success = await saveToSupabase()
     if (success) {
@@ -664,8 +655,6 @@ const OnboardingPage = () => {
              <p>{error}</p>
              <button 
                onClick={() => {
-                 console.log('Current user:', user)
-                 console.log('Current form data:', formData)
                }}
                style={{ marginTop: '10px', padding: '5px 10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}
              >

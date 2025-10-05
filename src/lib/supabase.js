@@ -16,7 +16,6 @@ export { supabase }
 
 export const auth = {
   signUp: async (email, password, userData = {}) => {
-    console.log('Signing up with user data:', userData)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -24,7 +23,6 @@ export const auth = {
         data: userData
       }
     })
-    console.log('Signup response:', { data, error })
     return { data, error }
   },
 

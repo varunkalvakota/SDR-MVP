@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { aiService } from '../lib/aiService'
 import { 
   FiLinkedin,
   FiCpu,
@@ -29,8 +30,8 @@ const LinkedInAnalysisPage = () => {
     setLinkedinFormMessage('')
 
     try {
-      // Generate LinkedIn analysis
-      const analysisResults = generateMockLinkedInAnalysis(linkedinFormData)
+      // Generate real LinkedIn analysis using AI
+      const analysisResults = await performRealLinkedInAnalysis(linkedinFormData)
       
       // Save lead data to database
       const { error } = await supabase
@@ -70,7 +71,253 @@ const LinkedInAnalysisPage = () => {
     }
   }
 
-  // Generate mock LinkedIn analysis using SalesLens format
+  // Perform real LinkedIn analysis using AI service
+  const performRealLinkedInAnalysis = async (leadData) => {
+    try {
+      // Create profile data object for AI analysis
+      const profileData = {
+        current_position: leadData.targetRole || 'Professional',
+        experience_years: leadData.experience || 'Not specified',
+        career_goal: `Transitioning to ${leadData.targetRole} role`,
+        skills: [], // We don't have skills from the form, but AI will provide suggestions
+        linkedin_url: leadData.linkedinUrl
+      }
+
+      // Use the AI service to analyze the LinkedIn profile
+      const aiResponse = await aiService.analyzeLinkedInProfile(profileData)
+      
+      // Parse the AI response
+      let analysisData
+      try {
+        // Try to parse as JSON first
+        analysisData = JSON.parse(aiResponse)
+      } catch (parseError) {
+        // If JSON parsing fails, create a structured response from the text
+        analysisData = createStructuredAnalysisFromText(aiResponse, leadData)
+      }
+
+      return analysisData
+    } catch (error) {
+      console.error('AI analysis failed:', error)
+      // Fallback to enhanced mock data based on profile
+      return generateMockLinkedInAnalysis(leadData)
+    }
+  }
+
+  // Create structured analysis from AI text response
+  const createStructuredAnalysisFromText = (aiText, leadData) => {
+    // Extract key information from AI text response
+    const profileScore = extractScore(aiText, 'profile|score') || 75
+    const optimizationScore = extractScore(aiText, 'optimization') || 80
+    const sdrScore = extractScore(aiText, 'SDR|readiness') || 70
+
+    return {
+      score_total: profileScore,
+      scores: {
+        headline_topcard: Math.round(profileScore * 0.18),
+        about: Math.round(profileScore * 0.14),
+        experience: Math.round(profileScore * 0.24),
+        skills: Math.round(profileScore * 0.10),
+        education_certs: Math.round(profileScore * 0.06),
+        recs_endorsements: Math.round(profileScore * 0.06),
+        photo_banner: Math.round(profileScore * 0.04),
+        activity_branding: Math.round(profileScore * 0.08),
+        settings_hygiene: Math.round(profileScore * 0.05),
+        ats_boolean_alignment: Math.round(profileScore * 0.05)
+      },
+      stage: leadData.experience === '0-1' ? 'breaking_in' : 'experienced',
+      headline_options: extractHeadlineOptions(aiText) || [
+        `${leadData.targetRole} | B2B SaaS & AI | Pipeline Generation, Cold Calling, Salesforce`,
+        `Sales Development Representative | Outbound Prospecting | Meetings Booked 120%+`,
+        `BDR | Tech Sales | ZoomInfo, Sales Navigator, Outreach | Building Qualified Pipeline`
+      ],
+      about_rewrite: extractAboutRewrite(aiText) || `Tech sales professional focused on building qualified pipeline for SaaS and AI teams. I run targeted outbound across phone, email, and LinkedIn, align to ICP pains, and book high-quality meetings. Recent impact includes [quota attainment %], [meetings booked per month], and [$ pipeline generated], using Salesforce, ZoomInfo, and Outreach. I learn fast, iterate cadences, and test messaging to raise reply and connect rates. Looking to help a North America team hit revenue goals by owning top-of-funnel and partnering tightly with AEs. Open to connect with SDR leaders and recruiters.`,
+      experience_rewrites: [
+        {
+          role_input_title: leadData.targetRole || 'Current Role',
+          normalized_title: leadData.targetRole,
+          bullets: [
+            `Generated [X] qualified meetings per month against a target of [Y], finishing at [Z]% to quota`,
+            `Drove [$] in sourced pipeline across [SMB/MM/ENT] accounts in [sector]`,
+            `Executed [50 to 80] cold calls daily with [connect rate %], converting [conversation to meeting %]`,
+            `Built account lists with ZoomInfo and Sales Navigator, raising reply rates to [rate %] via personalization`,
+            `Logged all activities in Salesforce and maintained [100%] next-step hygiene`
+          ],
+          tools: ['Salesforce', 'Outreach', 'ZoomInfo', 'LinkedIn Sales Navigator'],
+          sales_reframing_used: true
+        }
+      ],
+      skills: {
+        add_now: ['Prospecting', 'Salesforce', 'LinkedIn Sales Navigator', 'Outbound', 'Cold Calling', 'Pipeline Generation'],
+        pin_top3: ['Prospecting', 'Salesforce', 'LinkedIn Sales Navigator'],
+        ordering_shortlist: ['Prospecting', 'Salesforce', 'LinkedIn Sales Navigator', 'Outbound Sales', 'Cold Calling', 'Pipeline Generation', 'Lead Generation', 'B2B Sales']
+      },
+      settings: {
+        location: { current: 'Not specified', suggest: 'City, State/Province, Country' },
+        industry: { current: 'Not specified', suggest: 'Software Development' },
+        open_to_work: { status: 'off', suggest: 'on_recruiters_only' },
+        contact_info: { has_email: false, custom_url: { has: false, suggest: 'linkedin.com/in/firstname-lastname' } }
+      },
+      education_certs: {
+        grad_year_present: false,
+        cert_suggestions: ['HubSpot Inbound Sales', 'Salesforce Trailhead (Admin Basics)', 'LinkedIn Sales Navigator Fundamentals', 'ZoomInfo Certification']
+      },
+      recs_plan: {
+        targets: ['current_manager', 'AE_partner', 'mentor'],
+        talk_tracks: ['quota_attainment', 'prospecting_grit', 'coachability']
+      },
+      photo_banner: {
+        photo_verdict: 'ok',
+        banner_theme: ['tech sales theme', 'subtle brand graphic']
+      },
+      activity_plan: {
+        posts: [
+          'Share insights about SDR best practices and prospecting techniques',
+          'Post about your journey transitioning into tech sales',
+          'Engage with industry leaders and share thoughtful comments'
+        ],
+        comments: [
+          'Comment on SDR manager posts with valuable insights',
+          'Engage with sales tool company posts',
+          'Respond to job postings with relevant experience'
+        ],
+        networking_playbook: [
+          'Connect with SDR Managers at target companies with a 2-line note',
+          'Engage on their posts before requesting coffee chat',
+          'Reply to recruiter InMails within 24 hours'
+        ]
+      },
+      priority_checklist: extractPriorityChecklist(aiText) || [
+        'Update headline with SDR keywords and value proposition',
+        'Rewrite About section with metrics and tools',
+        'Add missing SDR skills to profile',
+        'Set Open to Work for recruiters only',
+        'Update location to be more specific'
+      ],
+      recruiter_summary_line: extractRecruiterSummary(aiText) || `${leadData.targetRole} with ${leadData.experience} years experience, focused on building qualified pipeline for SaaS and AI teams using Salesforce, Outreach, and LinkedIn Sales Navigator.`,
+      keyword_bank: {
+        role: ['SDR', 'BDR'],
+        functions: ['Outbound Prospecting', 'Cold Calling', 'Pipeline Generation', 'Meetings Booked', 'SQLs', 'SAOs', 'Quota Attainment'],
+        stack: ['Salesforce', 'Outreach', 'Salesloft', 'ZoomInfo', 'LinkedIn Sales Navigator', 'Gong'],
+        sector: ['SaaS', 'AI', 'Cloud', 'Cybersecurity', 'Fintech'],
+        geo: ['United States', 'Canada']
+      },
+      boolean_line: '(title:SDR OR title:BDR OR "Sales Development Representative" OR "Business Development Representative") AND (SaaS OR AI OR Cloud OR Cybersecurity OR Fintech) AND (Salesforce OR Outreach OR Salesloft OR ZoomInfo OR "Sales Navigator") AND (prospecting OR "pipeline generation" OR "cold calling") AND (United States OR Canada)'
+    }
+  }
+
+  // Helper functions to extract data from AI text response
+  const extractScore = (text, keyword) => {
+    const regex = new RegExp(`${keyword}[^0-9]*([0-9]{1,3})`, 'i')
+    const match = text.match(regex)
+    return match ? parseInt(match[1]) : null
+  }
+
+  // General text cleaning function
+  const cleanText = (text) => {
+    if (!text) return ''
+    
+    return text
+      .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold formatting
+      .replace(/\*([^*]+)\*/g, '$1') // Remove italic formatting
+      .replace(/^["']|["']$/g, '') // Remove surrounding quotes
+      .replace(/^["']|["']$/g, '') // Remove quotes again
+      .replace(/^\s*["']|["']\s*$/g, '') // Remove quotes with whitespace
+      .replace(/^["']|["']$/g, '') // Remove quotes again
+      .replace(/^-\s*/, '') // Remove bullet points
+      .replace(/^\d+\.\s*/, '') // Remove numbering
+      .replace(/^Diagnosis[^:]*:\s*/i, '') // Remove diagnosis text
+      .replace(/^Rewrite[^:]*:\s*/i, '') // Remove rewrite label
+      .replace(/^Option\s*\d+[^:]*:\s*/i, '') // Remove option labels
+      .trim()
+  }
+
+  const extractHeadlineOptions = (text) => {
+    const headlines = []
+    
+    // Try multiple patterns to find headlines
+    const patterns = [
+      /headline[^:]*:([^\n]+)/gi,
+      /option\s*\d+[^:]*:([^\n]+)/gi,
+      /rewrite[^:]*:([^\n]+)/gi
+    ]
+    
+    for (const pattern of patterns) {
+      let match
+      while ((match = pattern.exec(text)) !== null && headlines.length < 3) {
+        let headline = cleanText(match[1])
+        
+        // Only add if it's a meaningful headline (not just markdown artifacts)
+        if (headline.length > 10 && !headline.match(/^[\*\-\d\s,"']+$/)) {
+          headlines.push(headline)
+        }
+      }
+    }
+    
+    return headlines.length > 0 ? headlines : null
+  }
+
+  const extractAboutRewrite = (text) => {
+    // Look for rewrite section specifically
+    const rewriteRegex = /rewrite[^:]*:([^]+?)(?=\n\n|\n[A-Z]|$)/i
+    let match = text.match(rewriteRegex)
+    
+    if (!match) {
+      // Fallback to general about section
+      const aboutRegex = /about[^:]*:([^]+?)(?=\n\n|\n[A-Z]|$)/i
+      match = text.match(aboutRegex)
+    }
+    
+    if (match) {
+      let content = match[1].trim()
+      
+      // Extract just the rewrite content if it contains diagnosis
+      if (content.includes('Rewrite:')) {
+        const rewriteMatch = content.match(/Rewrite[^:]*:\s*["']?([^"']+)["']?/i)
+        if (rewriteMatch) {
+          content = rewriteMatch[1].trim()
+        }
+      }
+      
+      content = cleanText(content)
+      
+      // Only return if it's meaningful content
+      if (content.length > 20 && !content.match(/^[\*\-\d\s,"']+$/)) {
+        return content
+      }
+    }
+    return null
+  }
+
+  const extractPriorityChecklist = (text) => {
+    const checklist = []
+    const checklistRegex = /priority[^:]*:([^]+?)(?=\n\n|\n[A-Z]|$)/i
+    const match = text.match(checklistRegex)
+    if (match) {
+      const items = match[1]
+        .split('\n')
+        .map(item => cleanText(item))
+        .filter(item => item.length > 0 && !item.match(/^[\*\-\d\s,"']+$/)) // Filter out markdown artifacts
+      return items.slice(0, 5) // Limit to 5 items
+    }
+    return null
+  }
+
+  const extractRecruiterSummary = (text) => {
+    const summaryRegex = /recruiter[^:]*summary[^:]*:([^\n]+)/i
+    const match = text.match(summaryRegex)
+    if (match) {
+      let summary = cleanText(match[1])
+      
+      // Only return if it's meaningful content (not just markdown artifacts)
+      if (summary.length > 10 && !summary.match(/^[\*\-\d\s,"']+$/)) {
+        return summary
+      }
+    }
+    return null
+  }
+
+  // Generate mock LinkedIn analysis using SalesLens format (fallback)
   const generateMockLinkedInAnalysis = (leadData) => {
     const baseScore = 70
     const experienceBonus = leadData.experience === '4-5' ? 15 : 
@@ -324,10 +571,6 @@ const LinkedInAnalysisPage = () => {
                     >
                       <option value="">Select your target role</option>
                       <option value="SDR">Sales Development Representative (SDR)</option>
-                      <option value="BDR">Business Development Representative (BDR)</option>
-                      <option value="AE">Account Executive (AE)</option>
-                      <option value="Sales Manager">Sales Manager</option>
-                      <option value="Other">Other</option>
                     </select>
                   </div>
                   
@@ -359,7 +602,7 @@ const LinkedInAnalysisPage = () => {
                   
                   <p className="form-disclaimer">
                     <FiShield className="disclaimer-icon" />
-                    We'll analyze your profile and send you a detailed report within 24 hours. No spam, ever.
+                    We'll analyze your profile and deliver your detailed report in 2 minutes. No spam, ever.
                   </p>
                 </form>
               </div>
